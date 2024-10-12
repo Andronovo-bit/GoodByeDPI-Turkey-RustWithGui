@@ -1,5 +1,7 @@
-# GoodbyeDPI — Derin Paket İnceleme (DPI) atlatma aracı (Türkiye fork'u)
+# Özet​
+Bu proje Discord ve diğer engelli site ve uygulamalara VPN'siz ve internet hızında yavaşlama olmadan girmek için GoodbyeDPI'ın düzenlenmiş bir versiyonudur.
 
+# GoodbyeDPI — Derin Paket İnceleme (DPI) atlatma aracı (Türkiye fork'u)
 Bu uygulama Türkiye'de bazı internet servis sağlayıcılarının DNS değişikliğine izin vermemesi sebebiyle asıl proje olan [GoodbyeDPI](https://github.com/ValdikSS/GoodbyeDPI) projesi kullanılarak bu durumu bertaraf etmek için forklanmış bir varyasyondur.
 Bu yazılım, birçok İnternet Servis Sağlayıcısında bulunan ve belirli web sitelerine erişimi engelleyen Derin Paket İnceleme (DPI) sistemlerini atlatmak için tasarlanmıştır.
 Optik ayırıcı veya port yansıtma (Pasif DPI) kullanarak bağlanan ve herhangi bir veriyi engellemeyen, ancak istenen hedeften daha hızlı yanıt veren DPI'yi ve sıralı olarak bağlanan Aktif DPI'yi işler.
@@ -8,8 +10,13 @@ Bu uygulama kesinlikle VPN değildir ve oyunlarda/genel internet kullanımında 
 > [!NOTE]
 > Windows 7, 8, 8.1, 10 veya 11 işletim sistemlerinde **yönetici olarak çalıştırmanız** mecburidir.
 
+# Virüs & Veri Sızıntısı
+Program açık kaynak kodlu olduğundan tüm kodu görüp inceleyebilirsiniz. Bazı kullanıcılar VirusTotal'de false positive bildirimi yapsa da bu WinDivert.dll ve WinDiver64.sys dosyaları fonksiyonlarından dolayı bu şekilde yanlış bir sonuç verebiliyor. Bu DLL ve SYS dosyaları da açık kaynak kodludur ve incelenebilir. Tamamen temizdir. İstemeyen ve güvenmeyen de kullanmaz kimse kimseyi zorlamıyor, programı kullanmak kullanıcının inisiyatifindedir.
+
 # GoodbyeDPI'ı Kullanmak
 GoodbyeDPI'ın Türkiye fork'unu kullanmak için iki yöntem bulunmaktadır. Hizmet kurarak kullanma ve batch dosyasını çalıştırarak kullanma. Hizmet kurarak kullanmada yalnızca bir kez hizmeti kurup ardından elle herhangi bir şey çalıştırmaya gerek kalmaksızın bilgisayarınız her yeniden başlatıldığında otomatik olarak çalışırken, batch dosyası ile kullanmada her defasında elle batch dosyasını başlatarak kullanmanız gerekir (Batch penceresi kapatıldığında GoodbyeDPI kullanımına son verilir).
+> [!NOTE]
+> İndirdiğiniz ZIP dosyasını çıkarttığınız konumdan taşımayın. Kurulacak hizmet cmd dosyasını çalıştırdığınız dosya yolunu kullanacağından eğer dosyaları taşırsanız hizmet çalışmayacaktır. (Tavsiyem sizi rahatsız etmeyecek bir konuma ZIP dosyasını çıkarmanız ve dosyaları orada saklamanız örn. "C:\GoodbyeDPI\")
 
 
 ## Hizmet Kurarak Kullanma (Windows başlatılırken otomatik olarak çalıştırılır)
@@ -33,6 +40,26 @@ GoodbyeDPI Türkiye fork'unu batch dosyasını çalıştırarak kullanmak için 
 
 ## DNS ve Port'u Düzenleme
  **turkey_dnsredir.cmd** ve **service_install_dnsredir_turkey.cmd** dosyalarını herhangi bir metin düzenleyici ile düzenleyerek DNS ve port bilgilerini değiştirebilirsiniz.
+
+# WinDivert.dll ve WinDivert64.sys Dosyalarını Silmek​
+Eğer bu dosyaları silmeye çalıştığınızda dosya kullanımda hatası alırsanız, indirdiğiniz dosyalardaki service_remove.cmd dosyasını yönetici olarak çalıştırdıktan sonra silebilirsiniz.
+
+# Superonline Alternatif Yöntemler
+Eğer SuperOnline Fiber kullanıyorsanız ve "Discord update failed - retrying in ** seconds" hatası alıyorsanız:
+**1- Alternatif CMD Dosyaları**
+Yukarıda anlatılan işlemleri turkey_dnsredir_alternative_superonline.cmd
+veya
+service_install_dnsredir_turkey_alternative_superonline.cmd
+dosyaları ile yapmayı deneyin.
+Daha önceden varsayılan servisi kurduysanız service_remove.cmd dosyası ile servisi kaldırıp ardından alternatif Superonline servis dosyasıyla kurun.
+
+Bu şekilde de Discord update failed - retrying in ** seconds hatası alıyorsanız:
+**2- VPN ile Kaba Kuvvet**
+Yukarıda anlatılan işlemleri yaptıktan (Hizmeti kurduktan veya cmd dosyasını çalışır hale getirdikten) sonra, herhangi bir Windows VPN'i açıp discordu başlatın ve discordun açılmasını bekleyin. Discord açıldıktan sonra VPN'i kapatın ve Discordu kullanmaya devam edin.
+
+Bunlara rağmen Superonline ile Discorda giriş yapamıyorsanız
+**3- Secure DNS Client**
+SecureDNSClient isimli projeyi de deneyebilirsiniz. (Ben denemedim ve rehberini de bulamadım biraz araştırma ile bulabilirsiniz.)
 
 # Yasal Uyarı
 > [!IMPORTANT]
