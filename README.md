@@ -61,6 +61,14 @@ Bunlara rağmen Superonline ile Discorda giriş yapamıyorsanız
 **3- Secure DNS Client**
 SecureDNSClient isimli projeyi de deneyebilirsiniz. (Ben denemedim ve rehberini de bulamadım biraz araştırma ile bulabilirsiniz.)
 
+# Sık Karşılaşılan Sorunlar
+
+- Konsol penceresinin açılıp doğrudan kapanması (Bir tuşa basma veya herhangi bir yazıyı okuma şansı vermeden):
+Nadir görülen durumlarda Türkçe karakterler uygulamanın doğru çalışmasına engel olabiliyor. Çalıştırmayı denediğiniz .cmd dosyasını (Örneğin service_remove.cmd dosyası) herhangi bir metin düzenleyici ile (Not Defteri uygulaması gibi) düzenleyip dosyanın içerisindeki tüm Türkçe karakterleri İngilizce karşılıkları ile değiştirerek (Örneğin Ğ harfini G ile değiştirerek) veya silerek bu sorunu çözebilirsiniz.
+
+- Hizmetin başlatmaya çalışıldığında "Dosya yolu bulunamadı" hatası:
+Bu hata indirdiğiniz .zip klasörünü çıkardığınız konumdan farklı bir konuma taşımanız halinde ya da bazı dosyaları silmeniz halinde ortaya çıkar. Bu durumda [goodbyedpi-0.2.3rc3-turkey.zip](https://github.com/cagritaskn/GoodbyeDPI-Turkey/releases/download/release-0.2.3rc3-turkey/goodbyedpi-0.2.3rc3-turkey.zip) dosyasını tekrar bilgisayarınızda bir konuma çıkararak öncelikle service_remove.cmd dosyasını yönetici olarak çalıştırdıktan sonra seçeceğiniz diğer .cmd dosyasını tekrar çalıştırarak bu sorunu çözebilirsiniz.
+
 # Yasal Uyarı
 > [!IMPORTANT]
 > Bu uygulamanın kullanımından doğan her türlü yasal sorumluluk kullanan kişiye aittir. Uygulama yalnızca eğitim ve araştırma amaçları ile yazılmış ve düzenlenmiş olup; bu uygulamayı bu şartlar altında kullanmak ya da kullanmamak kullanıcının kendi inisiyatifindedir. Açık kaynak kodlarının paylaşıldığı bu platformdaki düzenlenmiş bu proje, bilgi paylaşımı ve kodlama eğitimi amaçları ile yazılmış ve düzenlenmiştir.
