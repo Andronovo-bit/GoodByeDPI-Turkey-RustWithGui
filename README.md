@@ -47,11 +47,14 @@ Eğer bu dosyaları silmeye çalıştığınızda dosya kullanımda hatası alı
 # Superonline Alternatif Yöntemler
 Eğer SuperOnline Fiber kullanıyorsanız ve "Discord update failed - retrying in ** seconds" hatası alıyorsanız:
 **1- Alternatif CMD Dosyaları**
-Yukarıda anlatılan işlemleri turkey_dnsredir_alternative_superonline.cmd
-veya
-service_install_dnsredir_turkey_alternative_superonline.cmd
-dosyaları ile yapmayı deneyin.
-Daha önceden varsayılan servisi kurduysanız service_remove.cmd dosyası ile servisi kaldırıp ardından alternatif Superonline servis dosyasıyla kurun.
+> [!NOTE]
+> Daha önceden diğer bir servisi kurduysanız service_remove.cmd dosyası ile kurulmuş olan servisi kaldırıp ardından alternatif aşağıdaki işlemleri yapın.
+- Yukarıda anlatılan işlemleri **turkey_dnsredir_alternative_superonline.cmd/service_install_dnsredir_turkey_alternative_superonline.cmd**
+komut dosyaları ile veya
+**turkey_dnsredir_alternative2_superonline.cmd/service_install_dnsredir_turkey_alternative2_superonline.cmd**
+komut dosyaları ile yapmayı deneyin. (Sağ Tık > Yönetici Olarak Çalıştır)
+- Bu işlemleri tamamladıktan sonra **Windows 10 için [buradan](https://www.ipsorgu.com/windows_10_dns_degistirme.php)**, **Windows 11 için [buradan](https://www.ipsorgu.com/windows_11_dns_degistirme.php)** bakarak Windows ayarlarında DNS'inizi tercih ettiğiniz bir DNS adresine çevirin. (Tavsiye edilen: Yandex DNS, Cloudflare DNS)
+- Ardından bilgisayarınızı yeniden başlatın.
 
 Bu şekilde de Discord update failed - retrying in ** seconds hatası alıyorsanız:
 **2- VPN ile Kaba Kuvvet**
