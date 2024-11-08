@@ -43,6 +43,9 @@ GoodbyeDPI Türkiye fork'unu batch dosyasını çalıştırarak kullanmak için 
 
 # WinDivert.dll ve WinDivert64.sys Dosyalarını Silmek​
 Eğer bu dosyaları silmeye çalıştığınızda dosya kullanımda hatası alırsanız, indirdiğiniz dosyalardaki service_remove.cmd dosyasını yönetici olarak çalıştırdıktan sonra silebilirsiniz.
+WinDivert dosyaları da açık kaynak kodludur.
+Buradan WinDivert kütüphanesinin açık kaynak kodlarına ulaşabilirsiniz:
+**[WinDivert 2.2: Windows Packet Divert](https://github.com/basil00/WinDivert)**
 
 # Superonline Alternatif Yöntemler
 Eğer SuperOnline Fiber kullanıyorsanız ve "Discord update failed - retrying in ** seconds" hatası alıyorsanız:
