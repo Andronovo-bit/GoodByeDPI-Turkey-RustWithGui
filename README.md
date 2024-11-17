@@ -24,7 +24,7 @@ GoodbyeDPI Türkiye fork'unu hizmet kurarak kullanmak için:
 - [goodbyedpi-0.2.3rc3-turkey.zip](https://github.com/cagritaskn/GoodbyeDPI-Turkey/releases/download/release-0.2.3rc3-turkey/goodbyedpi-0.2.3rc3-turkey.zip) dosyasını bilgisayarınıza indirin. 
 - ZIP dosyasını herhangi bir dizine çıkarın.
 - Çıkartılan dosyalardan **service_install_dnsredir_turkey.cmd** dosyasına sağ tıklayarak **Yönetici Olarak Çalıştır** seçeneğini seçin.
-- Açılan konsol penceresinde herhangi bir tuşa basın.
+- Açılan konsol penceresinde Y tuşuna basın.
 - Pencere, hizmet kurulduğunda otomatik olarak kapanacak ve hizmet de otomatik olarak başlayacaktır.
 > [!NOTE]
 > Bu işlem bilgisayarınıza GoodbyeDPI hizmetini kuracaktır. GoodbyeDPI hizmetini bilgisayarınızdan kaldırmak için çıkarttığınız dosyalar içerisindeki **service_remove.cmd** dosyasını yönetici olarak çalıştırmanız gerekmektedir.
@@ -55,7 +55,7 @@ Eğer SuperOnline Fiber kullanıyorsanız ve "Discord update failed - retrying i
 - Yukarıda anlatılan işlemleri **turkey_dnsredir_alternative_superonline.cmd/service_install_dnsredir_turkey_alternative_superonline.cmd**
 komut dosyaları ile veya
 **turkey_dnsredir_alternative2_superonline.cmd/service_install_dnsredir_turkey_alternative2_superonline.cmd**
-komut dosyaları ile yapmayı deneyin. (Sağ Tık > Yönetici Olarak Çalıştır)
+komut dosyaları ile yapmayı deneyin. (Sağ Tık > Yönetici Olarak Çalıştır daha sonra pencere açıldığında Y tuşuna basın)
 - Bu işlemleri tamamladıktan sonra **Windows 10 için [buradan](https://www.ipsorgu.com/windows_10_dns_degistirme.php)**, **Windows 11 için [buradan](https://www.ipsorgu.com/windows_11_dns_degistirme.php)** bakarak Windows ayarlarında DNS'inizi tercih ettiğiniz bir DNS adresine çevirin. (Tavsiye edilen: Yandex DNS, Cloudflare DNS)
 - Ardından bilgisayarınızı yeniden başlatın.
 
