@@ -25,7 +25,7 @@ GoodbyeDPI Türkiye fork'unu hizmet kurarak kullanmak için:
 - ZIP dosyasını herhangi bir dizine çıkarın.
 - Çıkartılan dosyalardan **service_install_dnsredir_turkey.cmd** dosyasına sağ tıklayarak **Yönetici Olarak Çalıştır** seçeneğini seçin.
 - Açılan konsol penceresinde herhangi bir tuşa basın.
-- Pencere, hizmet kurulduğunda otomatik olarak kapanacaktır. Pencere kapandıktan sonra bilgisayarınızı yeniden başlatın.
+- Pencere, hizmet kurulduğunda otomatik olarak kapanacak ve hizmet de otomatik olarak başlayacaktır.
 > [!NOTE]
 > Bu işlem bilgisayarınıza GoodbyeDPI hizmetini kuracaktır. GoodbyeDPI hizmetini bilgisayarınızdan kaldırmak için çıkarttığınız dosyalar içerisindeki **service_remove.cmd** dosyasını yönetici olarak çalıştırmanız gerekmektedir.
 
@@ -39,7 +39,7 @@ GoodbyeDPI Türkiye fork'unu batch dosyasını çalıştırarak kullanmak için 
 > **turkey_dnsredir.cmd** dosyasını yönetici olarak çalıştırdığınızda GoodbyeDPI aktif olacaktır. Ancak bu yöntemle çalıştırıldığında hem bilgisayarınız yeniden başlatıldığında GoodbyeDPI'ı elle açmanız gerekecek, hem de **turkey_dnsredir.cmd** ile açılan pencere kapatıldığında GoodbyeDPI deaktive olacaktır.
 
 ## DNS ve Port'u Düzenleme
- **turkey_dnsredir.cmd** ve **service_install_dnsredir_turkey.cmd** dosyalarını herhangi bir metin düzenleyici ile düzenleyerek DNS ve port bilgilerini değiştirebilirsiniz.
+ **turkey_dnsredir.cmd** ve **service_install_dnsredir_turkey.cmd** dosyalarını herhangi bir metin düzenleyici ile düzenleyerek DNS ve port bilgilerini değiştirebilirsiniz. Varsayılan olarak Yandex DNS kullanılıyor.
 
 # WinDivert.dll ve WinDivert64.sys Dosyalarını Silmek​
 Eğer bu dosyaları silmeye çalıştığınızda dosya kullanımda hatası alırsanız, indirdiğiniz dosyalardaki service_remove.cmd dosyasını yönetici olarak çalıştırdıktan sonra silebilirsiniz.
@@ -69,8 +69,8 @@ SecureDNSClient isimli projeyi de deneyebilirsiniz. (Ben denemedim ve rehberini 
 
 # Sık Karşılaşılan Sorunlar
 
-- Konsol penceresinin açılıp doğrudan kapanması (Bir tuşa basma veya herhangi bir yazıyı okuma şansı vermeden):
-Nadir görülen durumlarda Türkçe karakterler uygulamanın doğru çalışmasına engel olabiliyor. Çalıştırmayı denediğiniz .cmd dosyasını (Örneğin service_remove.cmd dosyası) herhangi bir metin düzenleyici ile (Not Defteri uygulaması gibi) düzenleyip dosyanın içerisindeki tüm Türkçe karakterleri İngilizce karşılıkları ile değiştirerek (Örneğin Ğ harfini G ile değiştirerek) veya silerek bu sorunu çözebilirsiniz.
+- WinDivert dosyaları bulunamadı hatası (Yalancı virüs algılaması):
+WinDivert dosyaları bulunamadı hatası alıyorsanız antivirüs programınıza ayıkladığınız klasörü dışlama/istisna olarak ekleyin. Windows Defender kullanıyorsanız [buradaki rehberi](https://support.microsoft.com/tr-tr/windows/windows-g%C3%BCvenli%C4%9Fi-ne-d%C4%B1%C5%9Flama-ekleme-811816c0-4dfd-af4a-47e4-c301afe13b26) takip ederek "goodbyedpi-0.2.3rc3-turkey" klasörünü dışlamalara ekleyebilirsiniz.
 
 - Hizmetin başlatmaya çalışıldığında "Dosya yolu bulunamadı" hatası:
 Bu hata indirdiğiniz .zip klasörünü çıkardığınız konumdan farklı bir konuma taşımanız halinde ya da bazı dosyaları silmeniz halinde ortaya çıkar. Bu durumda [goodbyedpi-0.2.3rc3-turkey.zip](https://github.com/cagritaskn/GoodbyeDPI-Turkey/releases/download/release-0.2.3rc3-turkey/goodbyedpi-0.2.3rc3-turkey.zip) dosyasını tekrar bilgisayarınızda bir konuma çıkararak öncelikle service_remove.cmd dosyasını yönetici olarak çalıştırdıktan sonra seçeceğiniz diğer .cmd dosyasını tekrar çalıştırarak bu sorunu çözebilirsiniz.
