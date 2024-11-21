@@ -16,7 +16,7 @@ Program açık kaynak kodlu olduğundan tüm kodu görüp inceleyebilirsiniz. Ba
 # GoodbyeDPI'ı Kullanmak
 GoodbyeDPI'ın Türkiye fork'unu kullanmak için iki yöntem bulunmaktadır. Hizmet kurarak kullanma ve batch dosyasını çalıştırarak kullanma. Hizmet kurarak kullanmada yalnızca bir kez hizmeti kurup ardından elle herhangi bir şey çalıştırmaya gerek kalmaksızın bilgisayarınız her yeniden başlatıldığında otomatik olarak çalışırken, batch dosyası ile kullanmada her defasında elle batch dosyasını başlatarak kullanmanız gerekir (Batch penceresi kapatıldığında GoodbyeDPI kullanımına son verilir).
 > [!NOTE]
-> İndirdiğiniz ZIP dosyasını çıkarttığınız konumdan taşımayın. Kurulacak hizmet cmd dosyasını çalıştırdığınız dosya yolunu kullanacağından eğer dosyaları taşırsanız hizmet çalışmayacaktır. (Tavsiyem sizi rahatsız etmeyecek bir konuma ZIP dosyasını çıkarmanız ve dosyaları orada saklamanız örn. "C:\GoodbyeDPI\")
+> İndirdiğiniz ZIP dosyasını çıkarttığınız konumdan taşımayın. Kurulacak hizmet .cmd dosyasını çalıştırdığınız dosya yolunu kullanacağından eğer dosyaları taşırsanız hizmet çalışmayacaktır. (Tavsiyem sizi rahatsız etmeyecek bir konuma ZIP dosyasını çıkarmanız ve dosyaları orada saklamanız örn. "C:\GoodbyeDPI\")
 
 
 ## Hizmet Kurarak Kullanma (Windows başlatılırken otomatik olarak çalıştırılır)
@@ -24,7 +24,7 @@ GoodbyeDPI Türkiye fork'unu hizmet kurarak kullanmak için:
 - [goodbyedpi-0.2.3rc3-turkey.zip](https://github.com/cagritaskn/GoodbyeDPI-Turkey/releases/download/release-0.2.3rc3-turkey/goodbyedpi-0.2.3rc3-turkey.zip) dosyasını bilgisayarınıza indirin. 
 - ZIP dosyasını herhangi bir dizine çıkarın.
 - Çıkartılan dosyalardan **service_install_dnsredir_turkey.cmd** dosyasına sağ tıklayarak **Yönetici Olarak Çalıştır** seçeneğini seçin.
-- Açılan konsol penceresinde Y tuşuna basın.
+- Açılan konsol penceresinde herhangi bir tuşuna basın.
 - Pencere, hizmet kurulduğunda otomatik olarak kapanacak ve hizmet de otomatik olarak başlayacaktır.
 > [!NOTE]
 > Bu işlem bilgisayarınıza GoodbyeDPI hizmetini kuracaktır. GoodbyeDPI hizmetini bilgisayarınızdan kaldırmak için çıkarttığınız dosyalar içerisindeki **service_remove.cmd** dosyasını yönetici olarak çalıştırmanız gerekmektedir.
@@ -39,33 +39,36 @@ GoodbyeDPI Türkiye fork'unu batch dosyasını çalıştırarak kullanmak için 
 > **turkey_dnsredir.cmd** dosyasını yönetici olarak çalıştırdığınızda GoodbyeDPI aktif olacaktır. Ancak bu yöntemle çalıştırıldığında hem bilgisayarınız yeniden başlatıldığında GoodbyeDPI'ı elle açmanız gerekecek, hem de **turkey_dnsredir.cmd** ile açılan pencere kapatıldığında GoodbyeDPI deaktive olacaktır.
 
 ## DNS ve Port'u Düzenleme
- **turkey_dnsredir.cmd** ve **service_install_dnsredir_turkey.cmd** dosyalarını herhangi bir metin düzenleyici ile düzenleyerek DNS ve port bilgilerini değiştirebilirsiniz. Varsayılan olarak Yandex DNS kullanılıyor.
+Bu forktaki komut dosyalarında varsayılan olarak **Yandex DNS** kullanılmaktadır. Farklı bir DNS kullanmak için **turkey_dnsredir.cmd** ve **service_install_dnsredir_turkey.cmd** dosyalarını herhangi bir metin düzenleyici ile düzenleyerek DNS ve port bilgilerini değiştirebilirsiniz. Eğer alternatif metod 1 veya 2'yi kullanacaksanız, **Windows 10 için [buradan](https://www.ipsorgu.com/windows_10_dns_degistirme.php)**, **Windows 11 için [buradan](https://www.ipsorgu.com/windows_11_dns_degistirme.php)** bakarak Windows ayarlarında DNS'inizi tercih ettiğiniz bir DNS adresine çevirin (Tavsiye edilen: Yandex DNS - 77.88.8.8/77.88.8.1 , Cloudflare DNS - 1.1.1.1/1.0.0.1). Eğer alternatif metod 3 ve 4'ü kullanacaksanız ayrıca DNS ayarlamanıza gerek yok, çünkü alternatif metod 3 ve 4'te önayarlı olarak Yandex DNS kullanılmaktayken; 1 ve 2 numaralı alternatif metodlarda önayarlı DNS bulunmamaktadır.
 
 # WinDivert.dll ve WinDivert64.sys Dosyalarını Silmek​
-Eğer bu dosyaları silmeye çalıştığınızda dosya kullanımda hatası alırsanız, indirdiğiniz dosyalardaki service_remove.cmd dosyasını yönetici olarak çalıştırdıktan sonra silebilirsiniz.
+Eğer bu dosyaları silmeye çalıştığınızda dosya kullanımda hatası alırsanız, indirdiğiniz dosyalardaki **service_remove.cmd** dosyasını yönetici olarak çalıştırdıktan sonra silebilirsiniz.
 WinDivert dosyaları da açık kaynak kodludur.
 Buradan WinDivert kütüphanesinin açık kaynak kodlarına ulaşabilirsiniz:
 **[WinDivert 2.2: Windows Packet Divert](https://github.com/basil00/WinDivert)**
 
 # Superonline Alternatif Yöntemler
 Eğer SuperOnline Fiber kullanıyorsanız ve "Discord update failed - retrying in ** seconds" hatası alıyorsanız:
+
 **1- Alternatif CMD Dosyaları**
 > [!NOTE]
 > Daha önceden diğer bir servisi kurduysanız service_remove.cmd dosyası ile kurulmuş olan servisi kaldırıp ardından alternatif aşağıdaki işlemleri yapın.
-- Yukarıda anlatılan işlemleri **turkey_dnsredir_alternative_superonline.cmd/service_install_dnsredir_turkey_alternative_superonline.cmd**
-komut dosyaları ile veya
-**turkey_dnsredir_alternative2_superonline.cmd/service_install_dnsredir_turkey_alternative2_superonline.cmd**
-komut dosyaları ile yapmayı deneyin. (Sağ Tık > Yönetici Olarak Çalıştır daha sonra pencere açıldığında Y tuşuna basın)
-- Bu işlemleri tamamladıktan sonra **Windows 10 için [buradan](https://www.ipsorgu.com/windows_10_dns_degistirme.php)**, **Windows 11 için [buradan](https://www.ipsorgu.com/windows_11_dns_degistirme.php)** bakarak Windows ayarlarında DNS'inizi tercih ettiğiniz bir DNS adresine çevirin. (Tavsiye edilen: Yandex DNS, Cloudflare DNS)
+- Yukarıda anlatılan işlemleri **turkey_dnsredir_alternative(1/2/3/4)_superonline.cmd**
+komut dosyalarından biri ile veya
+**service_install_dnsredir_turkey_alternative(1/2/3/4)_superonline.cmd**
+komut dosyaları ile yapmayı deneyin. (Sağ Tık > Yönetici Olarak Çalıştır daha sonra pencere açıldığında herhangi bir tuşuna basın)
+- Bu işlemleri tamamladıktan sonra **Windows 10 için [buradan](https://www.ipsorgu.com/windows_10_dns_degistirme.php)**, **Windows 11 için [buradan](https://www.ipsorgu.com/windows_11_dns_degistirme.php)** bakarak Windows ayarlarında DNS'inizi tercih ettiğiniz bir DNS adresine çevirin. (Tavsiye edilen: Yandex DNS - 77.88.8.8/77.88.8.1 , Cloudflare DNS - 1.1.1.1/1.0.0.1)
 - Ardından bilgisayarınızı yeniden başlatın.
 
 Bu şekilde de Discord update failed - retrying in ** seconds hatası alıyorsanız:
+
 **2- VPN ile Kaba Kuvvet**
 Yukarıda anlatılan işlemleri yaptıktan (Hizmeti kurduktan veya cmd dosyasını çalışır hale getirdikten) sonra, herhangi bir Windows VPN'i açıp discordu başlatın ve discordun açılmasını bekleyin. Discord açıldıktan sonra VPN'i kapatın ve Discordu kullanmaya devam edin.
 
 Bunlara rağmen Superonline ile Discorda giriş yapamıyorsanız
+
 **3- Secure DNS Client**
-SecureDNSClient isimli projeyi de deneyebilirsiniz. (Ben denemedim ve rehberini de bulamadım biraz araştırma ile bulabilirsiniz.)
+SecureDNSClient veya Zapret isimli programları da deneyebilirsiniz. (Ben denemedim ve rehberlerini de bulamadım ufak bir araştırma ile bulabilirsiniz.)
 
 # Sık Karşılaşılan Sorunlar
 
