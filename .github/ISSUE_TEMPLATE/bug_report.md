@@ -1,38 +1,38 @@
 ---
-name: Bug report
-about: Create a report to help us improve
+name: Hata raporu
+about: Bize yardımcı olmak için bir hata raporu oluşturun
 title: ''
 labels: ''
 assignees: ''
 
 ---
 
-**Describe the bug**
-A clear and concise description of what the bug is.
+**Hatanın açıklaması**  
+Hatanın ne olduğuna dair net ve kısa bir açıklama.
 
-**To Reproduce**
-Steps to reproduce the behavior:
-1. Go to '...'
-2. Click on '....'
-3. Scroll down to '....'
-4. See error
+**Tekrar üretme adımları**  
+Davranışı tekrar üretmek için adımlar:  
+1. Şuraya gidin: '...'  
+2. Şuna tıklayın: '....'  
+3. Şuraya kaydırın: '....'  
+4. Hata burada görünecek
 
-**Expected behavior**
-A clear and concise description of what you expected to happen.
+**Beklenen davranış**  
+Beklediğiniz sonuç hakkında net ve kısa bir açıklama.
 
-**Screenshots**
-If applicable, add screenshots to help explain your problem.
+**Ekran görüntüleri**  
+Uygulanabilir ise, sorunu açıklamaya yardımcı olması için ekran görüntüleri ekleyin.
 
-**Desktop (please complete the following information):**
- - OS: [e.g. iOS]
- - Browser [e.g. chrome, safari]
- - Version [e.g. 22]
+**Masaüstü (lütfen aşağıdaki bilgileri tamamlayın):**  
+- İşletim Sistemi: [örn. Windows 10]  
+- Tarayıcı: [örn. Chrome, Safari]  
+- Sürüm: [örn. 22]  
 
-**Smartphone (please complete the following information):**
- - Device: [e.g. iPhone6]
- - OS: [e.g. iOS8.1]
- - Browser [e.g. stock browser, safari]
- - Version [e.g. 22]
+**Akıllı telefon (lütfen aşağıdaki bilgileri tamamlayın):**  
+- Cihaz: [örn. iPhone 6]  
+- İşletim Sistemi: [örn. iOS 8.1]  
+- Tarayıcı: [örn. Varsayılan tarayıcı, Safari]  
+- Sürüm: [örn. 22]  
 
-**Additional context**
-Add any other context about the problem here.
+**Ek bilgiler**  
+Sorunla ilgili eklemek istediğiniz diğer ayrıntılar.
