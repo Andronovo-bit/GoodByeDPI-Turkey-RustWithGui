@@ -10,8 +10,11 @@ Bu uygulama kesinlikle VPN değildir ve oyunlarda/genel internet kullanımında 
 > [!NOTE]
 > Windows 7, 8, 8.1, 10 veya 11 işletim sistemlerinde **yönetici olarak çalıştırmanız** mecburidir.
 
-# Virüs & Veri Sızıntısı
+# Virüs & Veri Sızıntısı & Bitcoin Mining
 Program açık kaynak kodlu olduğundan tüm kodu görüp inceleyebilirsiniz. Bazı kullanıcılar VirusTotal'de false positive bildirimi yapsa da bu WinDivert.dll ve WinDivert64.sys dosyaları fonksiyonlarından dolayı bu şekilde yanlış bir sonuç verebiliyor. Bu DLL ve SYS dosyaları da açık kaynak kodludur ve incelenebilir. Tamamen temizdir. İstemeyen ve güvenmeyen de kullanmaz kimse kimseyi zorlamıyor, programı kullanmak kullanıcının inisiyatifindedir.
+WinDivert dosyalarının açıklamalarında ya da silmeye çalışırken karşılaşacağınız Bitcoin adresi sizi korkutmasın.
+WinDivert açık kaynaklı bir Windows Paket İnceleme-Değiştirme aracı kütüphanesidir. Bu kütüphanenin sahibi [basil00](https://github.com/basil00) isminde bir geliştiricidir. Bu geliştirici tamamen ücretsiz ve açık kaynak kodlu şekilde bu kütüphaneyi [Github - Windivert](https://github.com/basil00/WinDivert) isimli Github repositorysinde paylaşmaktadır.
+Bu geliştirici tamamen ücretsiz şekilde yayınladığı bu kütüphaneden hiçbir gelir elde etmemekte ancak kendisine gelecek bağışları da kabul etmektedir. Bağış yapılacak adres ise DLL ve SYS dosyalarının açıklamalarında bulunuyor. Yani gördüğünüz Bitcoin yazısı ve yanındaki karmaşık sayılar ve harflerden oluşan adres WinDivert kütüphanesinin geliştiricisi olan basil00'a ait bağış yapabileceğiniz Bitcoin cüzdan adresidir. Bu adresi resmi sitesinde de paylaşıyor, [bu da bağış sayfasının linki](https://reqrypt.org/donate.html).
 
 # GoodbyeDPI'ı Kullanmak
 GoodbyeDPI'ın Türkiye fork'unu kullanmak için iki yöntem bulunmaktadır. Hizmet kurarak kullanma ve batch dosyasını çalıştırarak kullanma. Hizmet kurarak kullanmada yalnızca bir kez hizmeti kurup ardından elle herhangi bir şey çalıştırmaya gerek kalmaksızın bilgisayarınız her yeniden başlatıldığında otomatik olarak çalışırken, batch dosyası ile kullanmada her defasında elle batch dosyasını başlatarak kullanmanız gerekir (Batch penceresi kapatıldığında GoodbyeDPI kullanımına son verilir).
