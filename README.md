@@ -12,7 +12,8 @@ Bu uygulama kesinlikle VPN değildir ve oyunlarda/genel internet kullanımında 
 
 # Virüs & Veri Sızıntısı & Bitcoin Mining
 Program açık kaynak kodlu olduğundan tüm kodu görüp inceleyebilirsiniz. Bazı kullanıcılar VirusTotal'de false positive bildirimi yapsa da bu WinDivert.dll ve WinDivert64.sys dosyaları fonksiyonlarından dolayı bu şekilde yanlış bir sonuç verebiliyor. Bu DLL ve SYS dosyaları da açık kaynak kodludur ve incelenebilir. Tamamen temizdir. İstemeyen ve güvenmeyen de kullanmaz kimse kimseyi zorlamıyor, programı kullanmak kullanıcının inisiyatifindedir.
-WinDivert dosyalarının açıklamalarında ya da silmeye çalışırken karşılaşacağınız Bitcoin adresi sizi korkutmasın.
+> [!IMPORTANT]
+> WinDivert dosyalarının açıklamalarında ya da silmeye çalışırken karşılaşacağınız Bitcoin adresi sizi korkutmasın.
 WinDivert açık kaynaklı bir Windows Paket İnceleme-Değiştirme aracı kütüphanesidir. Bu kütüphanenin sahibi [basil00](https://github.com/basil00) isminde bir geliştiricidir. Bu geliştirici tamamen ücretsiz ve açık kaynak kodlu şekilde bu kütüphaneyi [Github - Windivert](https://github.com/basil00/WinDivert) isimli Github repositorysinde paylaşmaktadır.
 Bu geliştirici tamamen ücretsiz şekilde yayınladığı bu kütüphaneden hiçbir gelir elde etmemekte ancak kendisine gelecek bağışları da kabul etmektedir. Bağış yapılacak adres ise DLL ve SYS dosyalarının açıklamalarında bulunuyor. Yani gördüğünüz Bitcoin yazısı ve yanındaki karmaşık sayılar ve harflerden oluşan adres WinDivert kütüphanesinin geliştiricisi olan basil00'a ait bağış yapabileceğiniz Bitcoin cüzdan adresidir. Bu adresi resmi sitesinde de paylaşıyor, [bu da bağış sayfasının linki](https://reqrypt.org/donate.html).
 
