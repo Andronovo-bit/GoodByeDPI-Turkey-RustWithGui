@@ -8,10 +8,15 @@ Bu proje Discord ve diğer engelli site ve uygulamalara VPN'siz ve internet hız
 
 # Bağış ve Destek
 Bu programı kullanmak tamamen ücretsizdir. Kullanımından herhangi bir gelir elde etmiyorum. Ancak çalışmalarıma devam edebilmem için aşağıda bulunan bağış adreslerinden beni destekleyebilirsiniz.
-GitHub Sponsor:
-![GitHub Sponsor](https://img.shields.io/github/sponsors/cagritaskn?label=Sponsor&logo=GitHub)
-Patreon:
-[:heart: Patreon](https://www.patreon.com/c/cagritaskn/membership)
+
+**GitHub Sponsor:**
+
+![GitHub Sponsor](https://img.shields.io/github/sponsors/cagritaskn?label=Sponsor%20cagritaskn&logo=GitHub)
+
+**Patreon:**
+
+[![Static Badge](https://img.shields.io/badge/cagritaskn-purple?logo=patreon&label=Patreon)](https://www.patreon.com/cagritaskn/membership)
+
 
 # GoodbyeDPI — Derin Paket İnceleme (DPI) atlatma aracı (Türkiye fork'u)
 Bu uygulama Türkiye'de bazı internet servis sağlayıcılarının DNS değişikliğine izin vermemesi sebebiyle asıl proje olan [GoodbyeDPI](https://github.com/ValdikSS/GoodbyeDPI) projesi kullanılarak bu durumu bertaraf etmek için forklanmış bir varyasyondur.
