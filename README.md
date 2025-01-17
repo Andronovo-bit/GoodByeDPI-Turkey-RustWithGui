@@ -11,7 +11,7 @@ Bu programı kullanmak tamamen ücretsizdir. Kullanımından herhangi bir gelir 
 
 **GitHub Sponsor:**
 
-![GitHub Sponsor](https://img.shields.io/github/sponsors/cagritaskn?label=Sponsor%20logo=GitHub)
+![GitHub Sponsor](https://img.shields.io/github/sponsors/cagritaskn?label=Sponsor?logo=GitHub)
 
 **Patreon:**
 
