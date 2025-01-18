@@ -56,12 +56,12 @@ GoodbyeDPI Türkiye versiyonunu hizmet kurarak kullanmak için:
 
 - [goodbyedpi-0.2.3rc3-turkey.zip](https://github.com/cagritaskn/GoodbyeDPI-Turkey/releases/download/release-0.2.3rc3-turkey/goodbyedpi-0.2.3rc3-turkey.zip) dosyasını bilgisayarınıza indirin.
 - ZIP dosyasını herhangi bir dizine çıkarın.
-- Çıkartılan dosyalardan ``**service_install_dnsredir_turkey.cmd**`` dosyasına sağ tıklayarak ``**Yönetici Olarak Çalıştır**`` seçeneğini seçin.
+- Çıkartılan dosyalardan ``service_install_dnsredir_turkey.cmd`` dosyasına sağ tıklayarak ``Yönetici Olarak Çalıştır`` seçeneğini seçin.
 - Açılan konsol penceresinde herhangi bir tuşuna basın.
 - Pencere, hizmet kurulduğunda otomatik olarak kapanacak ve hizmet de otomatik olarak başlayacaktır.
 
 > [!NOTE]
-> Bu işlem bilgisayarınıza GoodbyeDPI hizmetini kuracaktır. GoodbyeDPI hizmetini bilgisayarınızdan kaldırmak için çıkarttığınız dosyalar içerisindeki **service_remove.cmd** dosyasını yönetici olarak çalıştırmanız gerekmektedir.
+> Bu işlem bilgisayarınıza GoodbyeDPI hizmetini kuracaktır. GoodbyeDPI hizmetini bilgisayarınızdan kaldırmak için çıkarttığınız dosyalar içerisindeki ``service_remove.cmd`` dosyasını yönetici olarak çalıştırmanız gerekmektedir.
 
 ## Batch Dosyası İle Kullanma (Tek seferlik, pencere kapatıldığında sona erecek şekilde)
 
@@ -69,18 +69,18 @@ GoodbyeDPI Türkiye fork'unu batch dosyasını çalıştırarak kullanmak için 
 
 - [goodbyedpi-0.2.3rc3-turkey.zip](https://github.com/cagritaskn/GoodbyeDPI-Turkey/releases/download/release-0.2.3rc3-turkey/goodbyedpi-0.2.3rc3-turkey.zip) dosyasını bilgisayarınıza indirin.
 - ZIP dosyasını herhangi bir dizine çıkarın.
-- Çıkartılan dosyalardan ``**turkey_dnsredir.cmd**`` dosyasına sağ tıklayarak ``**Yönetici Olarak Çalıştır**`` seçeneğini seçin.
+- Çıkartılan dosyalardan ``turkey_dnsredir.cmd`` dosyasına sağ tıklayarak ``Yönetici Olarak Çalıştır`` seçeneğini seçin.
 
 > [!NOTE]
-> ``**turkey_dnsredir.cmd**`` dosyasını yönetici olarak çalıştırdığınızda GoodbyeDPI aktif olacaktır. Ancak bu yöntemle çalıştırıldığında hem bilgisayarınız yeniden başlatıldığında GoodbyeDPI'ı elle açmanız gerekecek, hem de ``**turkey_dnsredir.cmd**`` ile açılan pencere kapatıldığında GoodbyeDPI deaktive olacaktır.
+> ``turkey_dnsredir.cmd`` dosyasını yönetici olarak çalıştırdığınızda GoodbyeDPI aktif olacaktır. Ancak bu yöntemle çalıştırıldığında hem bilgisayarınız yeniden başlatıldığında GoodbyeDPI'ı elle açmanız gerekecek, hem de ``turkey_dnsredir.cmd`` ile açılan pencere kapatıldığında GoodbyeDPI deaktive olacaktır.
 
 ## DNS ve Port'u Düzenleme
 
-Bu forktaki komut dosyalarında varsayılan olarak **Yandex DNS** kullanılmaktadır. Farklı bir DNS kullanmak için ``**turkey_dnsredir.cmd**`` ve ``**service_install_dnsredir_turkey.cmd**`` dosyalarını herhangi bir metin düzenleyici ile düzenleyerek DNS ve port bilgilerini değiştirebilirsiniz. Eğer alternatif metod 1 veya 2'yi kullanacaksanız, **Windows 10 için [buradan](https://www.ipsorgu.com/windows_10_dns_degistirme.php)**, **Windows 11 için [buradan](https://www.ipsorgu.com/windows_11_dns_degistirme.php)** bakarak Windows ayarlarında DNS'inizi tercih ettiğiniz bir DNS adresine çevirin (Tavsiye edilen: Yandex DNS - 77.88.8.8/77.88.8.1 , Cloudflare DNS - 1.1.1.1/1.0.0.1). Eğer alternatif metod 3 ve 4'ü kullanacaksanız ayrıca DNS ayarlamanıza gerek yok, çünkü alternatif metod 3 ve 4'te önayarlı olarak Yandex DNS kullanılmaktayken; 1 ve 2 numaralı alternatif metodlarda önayarlı DNS bulunmamaktadır.
+Bu forktaki komut dosyalarında varsayılan olarak **Yandex DNS** kullanılmaktadır. Farklı bir DNS kullanmak için ``turkey_dnsredir.cmd`` ve ``service_install_dnsredir_turkey.cmd`` dosyalarını herhangi bir metin düzenleyici ile düzenleyerek DNS ve port bilgilerini değiştirebilirsiniz. Eğer alternatif metod 1 veya 2'yi kullanacaksanız, **Windows 10 için [buradan](https://www.ipsorgu.com/windows_10_dns_degistirme.php)**, **Windows 11 için [buradan](https://www.ipsorgu.com/windows_11_dns_degistirme.php)** bakarak Windows ayarlarında DNS'inizi tercih ettiğiniz bir DNS adresine çevirin (Tavsiye edilen: Yandex DNS - 77.88.8.8/77.88.8.1 , Cloudflare DNS - 1.1.1.1/1.0.0.1). Eğer alternatif metod 3 ve 4'ü kullanacaksanız ayrıca DNS ayarlamanıza gerek yok, çünkü alternatif metod 3 ve 4'te önayarlı olarak Yandex DNS kullanılmaktayken; 1 ve 2 numaralı alternatif metodlarda önayarlı DNS bulunmamaktadır.
 
 ## WinDivert.dll ve WinDivert64.sys Dosyalarını Silmek​
 
-Eğer bu dosyaları silmeye çalıştığınızda dosya kullanımda hatası alırsanız, indirdiğiniz dosyalardaki ``**service_remove.cmd**`` dosyasını yönetici olarak çalıştırdıktan sonra silebilirsiniz.
+Eğer bu dosyaları silmeye çalıştığınızda dosya kullanımda hatası alırsanız, indirdiğiniz dosyalardaki ``service_remove.cmd`` dosyasını yönetici olarak çalıştırdıktan sonra silebilirsiniz.
 > [!NOTE]
 > WinDivert dosyaları da açık kaynak kodludur. Buradan WinDivert kütüphanesinin açık kaynak kodlarına ulaşabilirsiniz: **[WinDivert 2.2: Windows Packet Divert](https://github.com/basil00/WinDivert)**
 
@@ -93,8 +93,8 @@ Eğer SuperOnline Fiber kullanıyorsanız ve "Discord update failed - retrying i
 > [!NOTE]
 > Daha önceden diğer bir servisi kurduysanız ``service_remove.cmd`` dosyası ile kurulmuş olan servisi kaldırıp ardından alternatif aşağıdaki işlemleri yapın.
 
-- Yukarıda anlatılan işlemleri ``**turkey_dnsredir_alternative(1/2/3/4)_superonline.cmd**``
-komut dosyalarından biri ile veya  ``**service_install_dnsredir_turkey_alternative(1/2/3/4)_superonline.cmd**`` komut dosyaları ile yapmayı deneyin (sağ tık > Yönetici Olarak Çalıştır, daha sonra pencere açıldığında herhangi bir tuşa basın).
+- Yukarıda anlatılan işlemleri ``turkey_dnsredir_alternative(1/2/3/4)_superonline.cmd``
+komut dosyalarından biri ile veya  ``service_install_dnsredir_turkey_alternative(1/2/3/4)_superonline.cmd`` komut dosyaları ile yapmayı deneyin (sağ tık > Yönetici Olarak Çalıştır, daha sonra pencere açıldığında herhangi bir tuşa basın).
 - Bu işlemleri tamamladıktan sonra **Windows 10 için [buradan](https://www.ipsorgu.com/windows_10_dns_degistirme.php)**, **Windows 11 için [buradan](https://www.ipsorgu.com/windows_11_dns_degistirme.php)** bakarak Windows ayarlarında DNS'inizi tercih ettiğiniz bir DNS adresine çevirin. (Tavsiye edilen: Yandex DNS - 77.88.8.8/77.88.8.1 , Cloudflare DNS - 1.1.1.1/1.0.0.1)
 - Ardından bilgisayarınızı yeniden başlatın.
 
@@ -119,7 +119,7 @@ WinDivert dosyaları bulunamadı hatası alıyorsanız antivirüs programınıza
 Bu hata indirdiğiniz .zip klasörünü çıkardığınız konumdan farklı bir konuma taşımanız halinde ya da bazı dosyaları silmeniz halinde ortaya çıkar. Bu durumda [goodbyedpi-0.2.3rc3-turkey.zip](https://github.com/cagritaskn/GoodbyeDPI-Turkey/releases/download/release-0.2.3rc3-turkey/goodbyedpi-0.2.3rc3-turkey.zip) dosyasını tekrar bilgisayarınızda bir konuma çıkararak öncelikle service_remove.cmd dosyasını yönetici olarak çalıştırdıktan sonra seçeceğiniz diğer .cmd dosyasını tekrar çalıştırarak bu sorunu çözebilirsiniz.
 
 - Bazı sitelerin yavaş açılması/açılmaması sorunu:
-Bu sorunu komut dosyalarında TTL ayarı bulunan yöntemlerde yaşayabilirsiniz. Eğer belirli siteler yavaş açılıyor ya da hiç açılmıyorsa TTL ayarı içermeyen 2 ve 4 numaralı alternatif metodları kullanarak bu sorunu çözebilirsiniz. Eğer hali hazırda başka bir komut dosyası ile kurulum yaptıysanız öncelikle ``**service_remove.cmd**`` komut dosyasını yönetici olarak çalıştırıp ardından 2 veya 4 numaralı alternatif yöntemleri ``**service_install_dnsredir_turkey_alternative2_superonline**`` ya da ``**service_install_dnsredir_turkey_alternative4_superonline**`` isimli komut dosyalarını yönetici olarak çalıştırıp talimatları takip ederek kurmalısınız.
+Bu sorunu komut dosyalarında TTL ayarı bulunan yöntemlerde yaşayabilirsiniz. Eğer belirli siteler yavaş açılıyor ya da hiç açılmıyorsa TTL ayarı içermeyen 2 ve 4 numaralı alternatif metodları kullanarak bu sorunu çözebilirsiniz. Eğer hali hazırda başka bir komut dosyası ile kurulum yaptıysanız öncelikle ``service_remove.cmd`` komut dosyasını yönetici olarak çalıştırıp ardından 2 veya 4 numaralı alternatif yöntemleri ``service_install_dnsredir_turkey_alternative2_superonline`` ya da ``service_install_dnsredir_turkey_alternative4_superonline`` isimli komut dosyalarını yönetici olarak çalıştırıp talimatları takip ederek kurmalısınız.
 
 ## Yasal Uyarı
 >
