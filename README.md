@@ -8,10 +8,6 @@ Kaspersky'i GoodbyeDPI ZIP dosyasının indirme işlemi sırasında devre dış�
 
 Bu proje Discord ve diğer engelli site ve uygulamalara VPN'siz ve internet hızında yavaşlama olmadan girmek için GoodbyeDPI'ın düzenlenmiş bir versiyonudur.
 
-## Bağış ve Destek
-
-Bu programı kullanmak tamamen ücretsizdir. Kullanımından herhangi bir gelir elde etmiyorum. Ancak çalışmalarıma devam edebilmem için aşağıda bulunan bağış adreslerinden beni destekleyebilirsiniz.
-
 **GitHub Sponsor:**
 
 [![Sponsor](https://img.shields.io/static/v1?label=Sponsor&message=%E2%9D%A4&logo=GitHub&color=%23fe8e86)](https://github.com/sponsors/cagritaskn)
@@ -120,6 +116,11 @@ Bu hata indirdiğiniz .zip klasörünü çıkardığınız konumdan farklı bir 
 
 - Bazı sitelerin yavaş açılması/açılmaması sorunu:
 Bu sorunu komut dosyalarında TTL ayarı bulunan yöntemlerde yaşayabilirsiniz. Eğer belirli siteler yavaş açılıyor ya da hiç açılmıyorsa TTL ayarı içermeyen 2 ve 4 numaralı alternatif metodları kullanarak bu sorunu çözebilirsiniz. Eğer hali hazırda başka bir komut dosyası ile kurulum yaptıysanız öncelikle ``service_remove.cmd`` komut dosyasını yönetici olarak çalıştırıp ardından 2 veya 4 numaralı alternatif yöntemleri ``service_install_dnsredir_turkey_alternative2_superonline`` ya da ``service_install_dnsredir_turkey_alternative4_superonline`` isimli komut dosyalarını yönetici olarak çalıştırıp talimatları takip ederek kurmalısınız.
+
+
+## Bağış ve Destek
+
+Bu programı kullanmak tamamen ücretsizdir. Kullanımından herhangi bir gelir elde etmiyorum. Ancak çalışmalarıma devam edebilmem için aşağıda bulunan bağış adreslerinden beni destekleyebilirsiniz.
 
 ## Yasal Uyarı
 >
