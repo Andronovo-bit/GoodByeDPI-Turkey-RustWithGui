@@ -82,7 +82,7 @@ Bu sorun genellikle fiber tarife kullanıcılarının karşılaştığı bir sor
 
 ## DNS ve Port'u Düzenleme
 
-Bu forktaki komut dosyalarında varsayılan olarak **Yandex DNS** kullanılmaktadır. Farklı bir DNS kullanmak için ``turkey_dnsredir.cmd`` ve ``service_install_dnsredir_turkey.cmd`` dosyalarını herhangi bir metin düzenleyici ile düzenleyerek DNS ve port bilgilerini değiştirebilirsiniz. Eğer alternatif metod 1 veya 2'yi kullanacaksanız, **Windows 10 için [buradan](https://www.ipsorgu.com/windows_10_dns_degistirme.php)**, **Windows 11 için [buradan](https://www.ipsorgu.com/windows_11_dns_degistirme.php)** bakarak Windows ayarlarında DNS'inizi tercih ettiğiniz bir DNS adresine çevirin (Tavsiye edilen: Yandex DNS - 77.88.8.8/77.88.8.1 , Cloudflare DNS - 1.1.1.1/1.0.0.1). Eğer alternatif metod 3 ve 4'ü kullanacaksanız ayrıca DNS ayarlamanıza gerek yok, çünkü alternatif metod 3 ve 4'te önayarlı olarak Yandex DNS kullanılmaktayken; 1 ve 2 numaralı alternatif metodlarda önayarlı DNS bulunmamaktadır.
+Bu forktaki komut dosyalarında varsayılan olarak **Yandex DNS** kullanılmaktadır. Farklı bir DNS kullanmak için ``turkey_dnsredir.cmd`` ve ``service_install_dnsredir_turkey.cmd`` dosyalarını herhangi bir metin düzenleyici ile düzenleyerek DNS ve port bilgilerini değiştirebilirsiniz. Eğer alternatif metod 1, 2 veya 6'yı kullanacaksanız, **Windows 10 için [buradan](https://www.ipsorgu.com/windows_10_dns_degistirme.php)**, **Windows 11 için [buradan](https://www.ipsorgu.com/windows_11_dns_degistirme.php)** bakarak Windows ayarlarında DNS'inizi tercih ettiğiniz bir DNS adresine çevirin (Tavsiye edilen: Yandex DNS - 77.88.8.8/77.88.8.1 , Cloudflare DNS - 1.1.1.1/1.0.0.1). Eğer alternatif metod 3, 4 veya 5'i kullanacaksanız ayrıca DNS ayarlamanıza gerek yok, çünkü alternatif metod 3, 4 ve 5'te önayarlı olarak Yandex DNS kullanılmaktayken; 1, 2 ve 6 numaralı alternatif metodlarda önayarlı DNS bulunmamaktadır.
 
 ## WinDivert.dll ve WinDivert64.sys Dosyalarını Silmek​
 
@@ -99,8 +99,8 @@ Eğer SuperOnline Fiber kullanıyorsanız ve "Discord update failed - retrying i
 > [!NOTE]
 > Daha önceden diğer bir servisi kurduysanız ``service_remove.cmd`` dosyası ile kurulmuş olan servisi kaldırıp ardından alternatif aşağıdaki işlemleri yapın.
 
-- Yukarıda anlatılan işlemleri ``turkey_dnsredir_alternative(1/2/3/4)_superonline.cmd``
-komut dosyalarından biri ile veya  ``service_install_dnsredir_turkey_alternative(1/2/3/4)_superonline.cmd`` komut dosyaları ile yapmayı deneyin (sağ tık > Yönetici Olarak Çalıştır, daha sonra pencere açıldığında herhangi bir tuşa basın).
+- Yukarıda anlatılan işlemleri ``turkey_dnsredir_alternative(1/2/3/4/5/6)_superonline.cmd``
+komut dosyalarından biri ile veya  ``service_install_dnsredir_turkey_alternative(1/2/3/4/5/6)_superonline.cmd`` komut dosyaları ile yapmayı deneyin (Sağ tık > Yönetici Olarak Çalıştır, daha sonra pencere açıldığında herhangi bir tuşa basın).
 - Bu işlemleri tamamladıktan sonra **Windows 10 için [buradan](https://www.ipsorgu.com/windows_10_dns_degistirme.php)**, **Windows 11 için [buradan](https://www.ipsorgu.com/windows_11_dns_degistirme.php)** bakarak Windows ayarlarında DNS'inizi tercih ettiğiniz bir DNS adresine çevirin. (Tavsiye edilen: Yandex DNS - 77.88.8.8/77.88.8.1 , Cloudflare DNS - 1.1.1.1/1.0.0.1)
 - Ardından bilgisayarınızı yeniden başlatın.
 
