@@ -1,11 +1,11 @@
 //! System tray icon management
 
 use tray_icon::{
-    menu::{Menu, MenuEvent, MenuItem, PredefinedMenuItem, CheckMenuItem},
+    menu::{Menu, MenuEvent, MenuItem, PredefinedMenuItem, CheckMenuItem, MenuId},
     TrayIcon, TrayIconBuilder, Icon,
 };
 use std::sync::mpsc;
-use tracing::{info, error};
+use std::time::Duration;
 
 /// Tray menu item IDs
 pub mod menu_ids {
@@ -29,8 +29,10 @@ pub enum TrayEvent {
 
 /// System tray manager
 pub struct TrayManager {
-    _tray: TrayIcon,
+    tray: TrayIcon,
     event_rx: mpsc::Receiver<TrayEvent>,
+    toggle_item: MenuItem,
+    is_running: bool,
 }
 
 impl TrayManager {
@@ -38,8 +40,12 @@ impl TrayManager {
     pub fn new(profiles: &[String], current_profile: &str, is_running: bool) -> anyhow::Result<Self> {
         let (event_tx, event_rx) = mpsc::channel();
 
+        // Create toggle menu item (we keep a reference to update it later)
+        let toggle_text = if is_running { "⏹ Stop" } else { "▶ Start" };
+        let toggle_item = MenuItem::with_id(menu_ids::TOGGLE, toggle_text, true, None);
+
         // Create menu
-        let menu = Self::create_menu(profiles, current_profile, is_running)?;
+        let menu = Self::create_menu(profiles, current_profile, &toggle_item)?;
 
         // Create icon
         let icon = Self::create_icon(is_running)?;
@@ -51,41 +57,93 @@ impl TrayManager {
             .with_icon(icon)
             .build()?;
 
-        // Handle menu events
+        // Handle menu events in a separate thread with timeout
         let tx = event_tx.clone();
         std::thread::spawn(move || {
+            let menu_receiver = MenuEvent::receiver();
             loop {
-                if let Ok(event) = MenuEvent::receiver().recv() {
-                    let tray_event = match event.id.0.as_str() {
-                        menu_ids::TOGGLE => TrayEvent::Toggle,
-                        menu_ids::SHOW => TrayEvent::Show,
-                        menu_ids::SETTINGS => TrayEvent::OpenSettings,
-                        menu_ids::QUIT => TrayEvent::Quit,
-                        id if id.starts_with("profile_") => {
-                            let profile = id.strip_prefix("profile_").unwrap_or("turkey");
-                            TrayEvent::SelectProfile(profile.to_string())
+                // Use try_recv with sleep instead of blocking recv
+                match menu_receiver.try_recv() {
+                    Ok(event) => {
+                        let tray_event = match event.id.0.as_str() {
+                            menu_ids::TOGGLE => TrayEvent::Toggle,
+                            menu_ids::SHOW => {
+                                // Directly show window via Windows API from this thread
+                                #[cfg(windows)]
+                                {
+                                    unsafe {
+                                        let title = "GoodbyeDPI Turkey\0";
+                                        let hwnd = winapi::um::winuser::FindWindowA(
+                                            std::ptr::null(),
+                                            title.as_ptr() as *const i8
+                                        );
+                                        if !hwnd.is_null() {
+                                            winapi::um::winuser::ShowWindow(hwnd, winapi::um::winuser::SW_SHOW);
+                                            winapi::um::winuser::SetForegroundWindow(hwnd);
+                                        }
+                                    }
+                                }
+                                TrayEvent::Show
+                            }
+                            menu_ids::SETTINGS => TrayEvent::OpenSettings,
+                            menu_ids::QUIT => TrayEvent::Quit,
+                            id if id.starts_with("profile_") => {
+                                let profile = id.strip_prefix("profile_").unwrap_or("turkey");
+                                TrayEvent::SelectProfile(profile.to_string())
+                            }
+                            _ => continue,
+                        };
+                        if tx.send(tray_event).is_err() {
+                            // Receiver dropped, exit thread
+                            break;
                         }
-                        _ => continue,
-                    };
-                    let _ = tx.send(tray_event);
+                    }
+                    Err(crossbeam_channel::TryRecvError::Empty) => {
+                        // No event, sleep a bit
+                        std::thread::sleep(Duration::from_millis(50));
+                    }
+                    Err(crossbeam_channel::TryRecvError::Disconnected) => {
+                        // Channel closed, exit
+                        break;
+                    }
                 }
             }
         });
 
         Ok(Self {
-            _tray: tray,
+            tray,
             event_rx,
+            toggle_item,
+            is_running,
         })
     }
 
+    /// Update tray status (icon, tooltip, menu text)
+    pub fn update_status(&mut self, is_running: bool) {
+        if self.is_running == is_running {
+            return; // No change
+        }
+        self.is_running = is_running;
+
+        // Update icon
+        if let Ok(icon) = Self::create_icon(is_running) {
+            let _ = self.tray.set_icon(Some(icon));
+        }
+
+        // Update tooltip
+        let _ = self.tray.set_tooltip(Some(Self::tooltip_text(is_running)));
+
+        // Update toggle menu item text
+        let toggle_text = if is_running { "⏹ Stop" } else { "▶ Start" };
+        self.toggle_item.set_text(toggle_text);
+    }
+
     /// Create the tray menu
-    fn create_menu(profiles: &[String], current_profile: &str, is_running: bool) -> anyhow::Result<Menu> {
+    fn create_menu(profiles: &[String], current_profile: &str, toggle_item: &MenuItem) -> anyhow::Result<Menu> {
         let menu = Menu::new();
 
-        // Toggle button
-        let toggle_text = if is_running { "⏹ Stop" } else { "▶ Start" };
-        let toggle = MenuItem::with_id(menu_ids::TOGGLE, toggle_text, true, None);
-        menu.append(&toggle)?;
+        // Toggle button (use the passed item)
+        menu.append(toggle_item)?;
 
         menu.append(&PredefinedMenuItem::separator())?;
 

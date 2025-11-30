@@ -1330,6 +1330,7 @@ name = "gdpi-gui"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "crossbeam-channel",
  "eframe",
  "egui",
  "gdpi-core",
@@ -1337,7 +1338,6 @@ dependencies = [
  "serde",
  "serde_json",
  "thiserror 2.0.17",
- "tokio",
  "tracing",
  "tracing-subscriber",
  "tray-icon",

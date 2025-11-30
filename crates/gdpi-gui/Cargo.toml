@@ -16,6 +16,7 @@ gdpi-core = { path = "../gdpi-core" }
 
 # Tray icon
 tray-icon = "0.19"
+crossbeam-channel = "0.5"
 
 # GUI toolkit
 eframe = { version = "0.29", default-features = false, features = [
@@ -27,9 +28,6 @@ egui = "0.29"
 
 # Image handling for tray icon
 image = { version = "0.25", default-features = false, features = ["png"] }
-
-# Async runtime
-tokio = { version = "1", features = ["rt-multi-thread", "sync", "process", "time"] }
 
 # Serialization
 serde = { version = "1.0", features = ["derive"] }
@@ -45,7 +43,15 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 
 # Windows specific
 [target.'cfg(windows)'.dependencies]
-winapi = { version = "0.3", features = ["winuser", "shellapi"] }
+winapi = { version = "0.3", features = [
+    "winuser", 
+    "shellapi", 
+    "processthreadsapi", 
+    "securitybaseapi", 
+    "winnt",
+    "handleapi",
+    "windef"
+] }
 
 [features]
 default = []

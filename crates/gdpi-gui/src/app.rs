@@ -4,10 +4,19 @@ use crate::config::GuiConfig;
 use crate::service::{ServiceController, ServiceStatus};
 use crate::tray::{TrayEvent, TrayManager};
 use eframe::egui;
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex, atomic::{AtomicBool, Ordering}};
 use std::time::{Duration, Instant};
 use tracing::{info, error};
-use std::f32::consts::PI;
+
+#[cfg(windows)]
+use winapi::um::winuser::{SetWindowPos, ShowWindow, SetForegroundWindow, GetWindowRect, 
+    HWND_TOP, SWP_SHOWWINDOW, SWP_NOSIZE, SWP_NOZORDER, SWP_NOACTIVATE, SW_HIDE, SW_SHOW};
+
+/// Flag to request window show from another thread
+static SHOW_WINDOW_REQUESTED: AtomicBool = AtomicBool::new(false);
+
+/// Saved window position for restore
+static mut SAVED_WINDOW_POS: Option<(i32, i32)> = None;
 
 /// Application state
 pub struct GoodbyeDpiApp {
@@ -23,6 +32,8 @@ pub struct GoodbyeDpiApp {
     status_message: Option<(String, Instant)>,
     /// Tray manager (optional - created after window)
     tray: Option<TrayManager>,
+    /// Pending show from tray request
+    pending_show: bool,
     /// Should quit
     should_quit: bool,
     /// Window visible
@@ -44,6 +55,7 @@ impl GoodbyeDpiApp {
             show_settings: false,
             status_message: None,
             tray: None,
+            pending_show: false,
             should_quit: false,
             window_visible: true,
             animation_start: Instant::now(),
@@ -69,6 +81,96 @@ impl GoodbyeDpiApp {
         }
     }
 
+    /// Hide window to tray using Windows API
+    fn hide_to_tray(&mut self, ctx: &egui::Context) {
+        self.window_visible = false;
+        self.pending_show = false;
+        SHOW_WINDOW_REQUESTED.store(false, Ordering::SeqCst);
+        
+        #[cfg(windows)]
+        {
+            if let Some(hwnd) = self.get_window_handle(ctx) {
+                unsafe {
+                    // Save current position before hiding
+                    let mut rect: winapi::shared::windef::RECT = std::mem::zeroed();
+                    if GetWindowRect(hwnd, &mut rect) != 0 {
+                        SAVED_WINDOW_POS = Some((rect.left, rect.top));
+                    }
+                    
+                    // Hide the window completely
+                    ShowWindow(hwnd, SW_HIDE);
+                }
+            }
+        }
+        
+        #[cfg(not(windows))]
+        {
+            ctx.send_viewport_cmd(egui::ViewportCommand::OuterPosition(egui::pos2(-10000.0, -10000.0)));
+        }
+    }
+
+    /// Show window from tray (sets atomic flag - window shows itself via timer)
+    fn show_from_tray(&mut self, _ctx: &egui::Context) {
+        SHOW_WINDOW_REQUESTED.store(true, Ordering::SeqCst);
+        self.pending_show = true;
+    }
+    
+    /// Process pending show request (must be called from update)
+    fn process_pending_show(&mut self, ctx: &egui::Context) {
+        // Check both the atomic flag (set from tray thread) and pending_show
+        if self.pending_show || SHOW_WINDOW_REQUESTED.load(Ordering::SeqCst) {
+            self.pending_show = false;
+            SHOW_WINDOW_REQUESTED.store(false, Ordering::SeqCst);
+            self.window_visible = true;
+            
+            #[cfg(windows)]
+            {
+                if let Some(hwnd) = self.get_window_handle(ctx) {
+                    unsafe {
+                        // Show window
+                        ShowWindow(hwnd, SW_SHOW);
+                        
+                        // Restore saved position or use default
+                        let (x, y) = SAVED_WINDOW_POS.unwrap_or((100, 100));
+                        SetWindowPos(hwnd, HWND_TOP, x, y, 0, 0, SWP_SHOWWINDOW | SWP_NOSIZE);
+                        
+                        // Bring to foreground
+                        SetForegroundWindow(hwnd);
+                    }
+                } else {
+                    ctx.send_viewport_cmd(egui::ViewportCommand::OuterPosition(egui::pos2(100.0, 100.0)));
+                    ctx.send_viewport_cmd(egui::ViewportCommand::Focus);
+                }
+            }
+            
+            #[cfg(not(windows))]
+            {
+                ctx.send_viewport_cmd(egui::ViewportCommand::OuterPosition(egui::pos2(100.0, 100.0)));
+                ctx.send_viewport_cmd(egui::ViewportCommand::Focus);
+            }
+            
+            ctx.request_repaint();
+        }
+    }
+    
+    /// Get the native window handle
+    #[cfg(windows)]
+    fn get_window_handle(&self, _ctx: &egui::Context) -> Option<winapi::shared::windef::HWND> {
+        // Find window by title
+        unsafe {
+            let title = "GoodbyeDPI Turkey\0";
+            let hwnd = winapi::um::winuser::FindWindowA(
+                std::ptr::null(),
+                title.as_ptr() as *const i8
+            );
+            if !hwnd.is_null() {
+                Some(hwnd)
+            } else {
+                None
+            }
+        }
+    }
+
     /// Handle tray events
     fn handle_tray_events(&mut self, ctx: &egui::Context) {
         // Collect events first to avoid borrow issues
@@ -89,9 +191,7 @@ impl GoodbyeDpiApp {
                     self.toggle_service();
                 }
                 TrayEvent::Show | TrayEvent::LeftClick => {
-                    self.window_visible = true;
-                    ctx.send_viewport_cmd(egui::ViewportCommand::Visible(true));
-                    ctx.send_viewport_cmd(egui::ViewportCommand::Focus);
+                    self.show_from_tray(ctx);
                 }
                 TrayEvent::SelectProfile(profile) => {
                     self.config.profile = profile;
@@ -99,10 +199,14 @@ impl GoodbyeDpiApp {
                 }
                 TrayEvent::OpenSettings => {
                     self.show_settings = true;
-                    self.window_visible = true;
-                    ctx.send_viewport_cmd(egui::ViewportCommand::Visible(true));
+                    self.show_from_tray(ctx);
                 }
                 TrayEvent::Quit => {
+                    // Stop service before quitting
+                    {
+                        let mut service = self.service.lock().unwrap();
+                        service.force_stop();
+                    }
                     self.should_quit = true;
                 }
             }
@@ -156,7 +260,8 @@ impl GoodbyeDpiApp {
     fn stop_service(&mut self) {
         let result = {
             let mut service = self.service.lock().unwrap();
-            if service.status().is_running() {
+            let status = service.status();
+            if status == ServiceStatus::Running || status == ServiceStatus::Starting {
                 Some(service.stop())
             } else {
                 None
@@ -165,7 +270,7 @@ impl GoodbyeDpiApp {
         
         if let Some(res) = result {
             match res {
-                Ok(_) => self.set_status("DPI bypass stopped"),
+                Ok(_) => self.set_status("Stopping DPI bypass..."),
                 Err(e) => self.set_status(&format!("Failed to stop: {}", e)),
             }
         }
@@ -181,19 +286,45 @@ impl GoodbyeDpiApp {
         self.service.lock().unwrap().status()
     }
 
-    /// Update service status
+    /// Update service status and sync tray
     fn check_service(&mut self) {
-        self.service.lock().unwrap().check_status();
+        let status = {
+            let mut service = self.service.lock().unwrap();
+            service.check_status();
+            service.status()
+        };
+        
+        // Update tray icon/menu based on service status
+        if let Some(ref mut tray) = self.tray {
+            let is_running = status == ServiceStatus::Running;
+            tray.update_status(is_running);
+        }
     }
 
     /// Render the main UI
     fn render_main_ui(&mut self, ctx: &egui::Context) {
+        // Top bar with window controls
+        egui::TopBottomPanel::top("top_bar").show(ctx, |ui| {
+            ui.horizontal(|ui| {
+                ui.heading(egui::RichText::new("GoodbyeDPI Turkey").size(16.0));
+                ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                    // Close button (quit)
+                    if ui.button("✕").on_hover_text("Quit").clicked() {
+                        self.should_quit = true;
+                    }
+                    // Minimize to tray button
+                    if ui.button("—").on_hover_text("Minimize to tray").clicked() {
+                        self.hide_to_tray(ctx);
+                    }
+                });
+            });
+        });
+
         egui::CentralPanel::default().show(ctx, |ui| {
             ui.vertical_centered(|ui| {
-                ui.add_space(20.0);
+                ui.add_space(10.0);
                 
-                // Title
-                ui.heading(egui::RichText::new("GoodbyeDPI Turkey").size(24.0).strong());
+                // Subtitle
                 ui.label("DPI Bypass Tool");
                 
                 ui.add_space(30.0);
@@ -361,26 +492,31 @@ impl eframe::App for GoodbyeDpiApp {
 
         // Handle tray events
         self.handle_tray_events(ctx);
+        
+        // Process any pending show request from tray
+        self.process_pending_show(ctx);
 
-        // Check service status periodically
+        // Check service status periodically (non-blocking)
         self.check_service();
 
-        // Handle quit
-        if self.should_quit {
-            ctx.send_viewport_cmd(egui::ViewportCommand::Close);
-            return;
+        // Handle native window close (X button) - minimize to tray instead
+        let close_requested = ctx.input(|i| i.viewport().close_requested());
+        if close_requested {
+            ctx.send_viewport_cmd(egui::ViewportCommand::CancelClose);
+            self.hide_to_tray(ctx);
         }
 
-        // Handle window close - minimize to tray instead
-        ctx.input(|i| {
-            if i.viewport().close_requested() {
-                ctx.send_viewport_cmd(egui::ViewportCommand::CancelClose);
-                ctx.send_viewport_cmd(egui::ViewportCommand::Visible(false));
-                self.window_visible = false;
+        // Handle quit - stop service first
+        if self.should_quit {
+            // Force stop service before closing
+            if let Ok(mut service) = self.service.try_lock() {
+                service.force_stop();
             }
-        });
+            // Exit the process completely
+            std::process::exit(0);
+        }
 
-        // Render UI
+        // Always render UI (even when "hidden" - egui needs to process events)
         self.render_main_ui(ctx);
 
         // Settings window
@@ -394,7 +530,7 @@ impl eframe::App for GoodbyeDpiApp {
         let repaint_delay = if is_loading {
             Duration::from_millis(50)  // Fast animation during loading
         } else {
-            Duration::from_millis(500) // Slower updates when idle
+            Duration::from_millis(100) // Keep responsive for tray events
         };
         ctx.request_repaint_after(repaint_delay);
     }
