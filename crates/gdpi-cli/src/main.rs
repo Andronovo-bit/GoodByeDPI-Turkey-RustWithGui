@@ -43,6 +43,9 @@ fn run(args: Args) -> Result<()> {
         Some(commands::Command::Test(test_args)) => {
             commands::test::execute(test_args)
         }
+        Some(commands::Command::Filter(filter_args)) => {
+            commands::filter::execute(filter_args)
+        }
         Some(commands::Command::Service(service_args)) => {
             commands::service::execute(service_args)
         }

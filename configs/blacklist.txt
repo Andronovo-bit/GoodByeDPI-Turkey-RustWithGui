@@ -1,0 +1,65 @@
+# GoodbyeDPI Turkey - Domain Blacklist
+# 
+# Bu dosyadaki domainlere SADECE DPI bypass uygulanır.
+# Diğer tüm trafik normal geçer (bypass olmadan).
+#
+# Kullanım:
+#   - Her satıra bir domain yazın
+#   - # ile başlayan satırlar yorum olarak kabul edilir
+#   - *.example.com wildcard kullanımı desteklenir
+#   - Boş satırlar göz ardı edilir
+#
+# Mod: BLACKLIST
+#   - SADECE listedeki domainlere bypass uygulanır
+#   - Diğer tüm trafik normal geçer
+#
+# Bu dosyayı değiştirirseniz, program otomatik olarak yeniden yükler.
+#
+
+# ═══════════════════════════════════════════════════════════
+# SOSYAL MEDYA
+# ═══════════════════════════════════════════════════════════
+
+# Twitter/X
+*.twitter.com
+*.x.com
+*.twimg.com
+
+# ═══════════════════════════════════════════════════════════
+# VIDEO & STREAMING
+# ═══════════════════════════════════════════════════════════
+
+# YouTube
+*.youtube.com
+*.googlevideo.com
+*.ytimg.com
+*.yt.be
+
+# ═══════════════════════════════════════════════════════════
+# İLETİŞİM UYGULAMALARI
+# ═══════════════════════════════════════════════════════════
+
+# Discord
+*.discord.com
+*.discord.gg
+*.discordapp.com
+*.discordapp.net
+*.discord.media
+
+# ═══════════════════════════════════════════════════════════
+# OYUN PLATFORMLARI
+# ═══════════════════════════════════════════════════════════
+
+# Steam (eğer sorun varsa)
+# *.steampowered.com
+# *.steamcommunity.com
+
+# Epic Games
+# *.epicgames.com
+
+# ═══════════════════════════════════════════════════════════
+# DİĞER SİTELER
+# ═══════════════════════════════════════════════════════════
+
+# Kendi eklemek istediğiniz domainleri aşağıya yazın:
+

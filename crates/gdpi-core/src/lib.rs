@@ -36,6 +36,7 @@
 pub mod config;
 pub mod conntrack;
 pub mod error;
+pub mod filter;
 pub mod packet;
 pub mod pipeline;
 pub mod strategies;
@@ -44,5 +45,6 @@ pub mod strategies;
 pub use config::Config;
 pub use conntrack::{DnsConnTracker, TcpConnTracker};
 pub use error::{Error, Result};
+pub use filter::{DomainFilter, FilterMode, FilterResult};
 pub use packet::Packet;
 pub use pipeline::{Context, Pipeline, Stats};

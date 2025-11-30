@@ -430,24 +430,48 @@ impl Default for PassiveDpiConfig {
     }
 }
 
-/// Blacklist/whitelist configuration
+/// Domain filtering configuration (whitelist/blacklist)
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(default)]
 pub struct BlacklistConfig {
-    /// Enable blacklist filtering
+    /// Enable domain filtering
     pub enabled: bool,
-    /// Blacklist file paths
+    
+    /// Filter mode: "whitelist", "blacklist", or "disabled"
+    /// - whitelist: Listed domains SKIP bypass (banks, government sites)
+    /// - blacklist: ONLY listed domains get bypass applied
+    pub mode: String,
+    
+    /// Local file path for domain list (auto-reloaded on change)
+    /// Default: "domains.txt" in config directory
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub file_path: Option<String>,
+    
+    /// Inline domain list (in addition to file)
+    #[serde(default)]
+    pub domains: Vec<String>,
+    
+    /// Legacy: Blacklist file paths (for backwards compatibility)
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub files: Vec<String>,
-    /// Allow connections without SNI when blacklist is enabled
+    
+    /// Allow connections without SNI when filtering is enabled
     pub allow_no_sni: bool,
+    
+    /// Auto-reload filter file when changed (check interval in seconds)
+    pub auto_reload_interval: u64,
 }
 
 impl Default for BlacklistConfig {
     fn default() -> Self {
         Self {
             enabled: false,
+            mode: "disabled".to_string(),
+            file_path: None,
+            domains: Vec::new(),
             files: Vec::new(),
             allow_no_sni: false,
+            auto_reload_interval: 30,
         }
     }
 }

@@ -1,0 +1,43 @@
+# GoodbyeDPI Turkey - Domain Filter
+# 
+# One domain per line
+# Use *.example.com for wildcard matching
+# Lines starting with # are comments
+#
+# Mode: Disabled
+#
+
+turkiye.gov.tr
+e-devlet.gov.tr
+*.yapikredi.com.tr
+*.ziraatbank.com.tr
+*.qnb.com.tr
+*.e-nabiz.gov.tr
+*.sgk.gov.tr
+*.akbank.com
+*.iyzico.com
+*.anadolusigorta.com.tr
+*.denizbank.com
+*.isbank.com.tr
+*.teb.com.tr
+*.ing.com.tr
+*.turkiye.gov.tr
+*.garanti.com.tr
+*.papara.com
+*.gov.tr
+*.enpara.com
+*.garantibbva.com.tr
+*.allianz.com.tr
+*.trbinance.com
+*.finansbank.com.tr
+*.gib.gov.tr
+*.ininal.com
+*.btcturk.com
+*.axa.com.tr
+*.vakifbank.com.tr
+*.ptt.gov.tr
+*.halkbank.com.tr
+*.hsbc.com.tr
+*.param.com.tr
+*.paribu.com
+*.paytr.com

@@ -3,6 +3,7 @@
 pub mod completions;
 pub mod config;
 pub mod driver;
+pub mod filter;
 pub mod run;
 pub mod service;
 pub mod test;
@@ -20,6 +21,9 @@ pub enum Command {
 
     /// Test connectivity
     Test(test::TestArgs),
+
+    /// Domain filter management (whitelist/blacklist)
+    Filter(filter::FilterArgs),
 
     /// Windows service management
     Service(service::ServiceArgs),

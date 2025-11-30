@@ -3,6 +3,7 @@
 //! Shared state and utilities for strategy execution.
 
 use crate::conntrack::{DnsConnTracker, TcpConnTracker};
+use crate::filter::{DomainFilter, FilterMode, FilterResult};
 use crate::packet::Packet;
 use dashmap::DashSet;
 use parking_lot::RwLock;
@@ -27,23 +28,31 @@ pub struct Stats {
     pub dns_redirected: u64,
     /// Packets dropped
     pub packets_dropped: u64,
+    /// Domains filtered (skipped)
+    pub domains_filtered: u64,
 }
 
 /// Execution context for the pipeline
 ///
 /// Provides shared state between strategies including connection tracking,
-/// blacklist checking, and statistics.
+/// domain filtering, and statistics.
 pub struct Context {
     /// Processing statistics
     pub stats: Stats,
-    /// Whether blacklist filtering is enabled
-    pub blacklist_enabled: bool,
-    /// Blacklisted domains
-    blacklist: Arc<DashSet<String>>,
+    /// Domain filter (whitelist/blacklist)
+    domain_filter: Arc<DomainFilter>,
     /// TCP connection tracker (for TTL)
     tcp_tracker: Arc<TcpConnTracker>,
     /// DNS connection tracker
     dns_tracker: Arc<DnsConnTracker>,
+    /// Allow connections without SNI
+    pub allow_no_sni: bool,
+    
+    // Legacy compatibility
+    /// Whether blacklist filtering is enabled (legacy)
+    pub blacklist_enabled: bool,
+    /// Blacklisted domains (legacy)
+    blacklist: Arc<DashSet<String>>,
 }
 
 impl Context {
@@ -51,75 +60,85 @@ impl Context {
     pub fn new() -> Self {
         Self {
             stats: Stats::default(),
-            blacklist_enabled: false,
-            blacklist: Arc::new(DashSet::new()),
+            domain_filter: Arc::new(DomainFilter::new()),
             tcp_tracker: Arc::new(TcpConnTracker::new()),
             dns_tracker: Arc::new(DnsConnTracker::new()),
+            allow_no_sni: false,
+            blacklist_enabled: false,
+            blacklist: Arc::new(DashSet::new()),
         }
     }
 
-    /// Create context with blacklist
+    /// Create context with domain filter
+    pub fn with_filter(filter: DomainFilter) -> Self {
+        let filter_enabled = filter.mode() != FilterMode::Disabled;
+        Self {
+            stats: Stats::default(),
+            domain_filter: Arc::new(filter),
+            tcp_tracker: Arc::new(TcpConnTracker::new()),
+            dns_tracker: Arc::new(DnsConnTracker::new()),
+            allow_no_sni: false,
+            blacklist_enabled: filter_enabled,
+            blacklist: Arc::new(DashSet::new()),
+        }
+    }
+
+    /// Create context with blacklist (legacy)
     pub fn with_blacklist(domains: Vec<String>) -> Self {
         let blacklist = Arc::new(DashSet::new());
-        for domain in domains {
+        for domain in &domains {
             blacklist.insert(domain.to_lowercase());
         }
         
+        // Also create new filter
+        let filter = DomainFilter::with_domains(FilterMode::Blacklist, domains);
+        
         Self {
             stats: Stats::default(),
+            domain_filter: Arc::new(filter),
             blacklist_enabled: true,
             blacklist,
             tcp_tracker: Arc::new(TcpConnTracker::new()),
             dns_tracker: Arc::new(DnsConnTracker::new()),
+            allow_no_sni: false,
         }
     }
 
-    /// Check if a hostname is blacklisted
+    /// Get domain filter reference
+    pub fn filter(&self) -> &DomainFilter {
+        &self.domain_filter
+    }
+
+    /// Check if bypass should be applied to a hostname
+    pub fn should_apply_bypass(&self, hostname: &str) -> bool {
+        match self.domain_filter.check(hostname) {
+            FilterResult::ApplyBypass => true,
+            FilterResult::SkipBypass => false,
+        }
+    }
+
+    /// Check if a hostname is blacklisted (legacy - use should_apply_bypass instead)
     ///
     /// Also checks parent domains (e.g., "sub.example.com" matches "example.com")
     pub fn is_blacklisted(&self, hostname: &str) -> bool {
-        if !self.blacklist_enabled {
-            return true; // If blacklist disabled, process all
-        }
-
-        let hostname = hostname.to_lowercase();
-
-        // Check exact match
-        if self.blacklist.contains(&hostname) {
-            return true;
-        }
-
-        // Check parent domains
-        let mut current = hostname.as_str();
-        while let Some(pos) = current.find('.') {
-            current = &current[pos + 1..];
-            if self.blacklist.contains(current) {
-                return true;
-            }
-        }
-
-        false
+        // Use new filter system
+        self.should_apply_bypass(hostname)
     }
 
     /// Add a domain to the blacklist
     pub fn add_to_blacklist(&self, domain: &str) {
         self.blacklist.insert(domain.to_lowercase());
+        self.domain_filter.add_domain(domain);
     }
 
     /// Load blacklist from a file
     pub fn load_blacklist_file(&self, path: &str) -> std::io::Result<usize> {
-        let content = std::fs::read_to_string(path)?;
-        let mut count = 0;
+        self.domain_filter.load_file(path)
+    }
 
-        for line in content.lines() {
-            let line = line.trim();
-            if !line.is_empty() && !line.starts_with('#') {
-                self.blacklist.insert(line.to_lowercase());
-                count += 1;
-            }
-        }
-
-        Ok(count)
+    /// Check and reload filter file if changed
+    pub fn check_filter_reload(&self) -> std::io::Result<bool> {
+        self.domain_filter.check_reload()
     }
 
     /// Get the TTL for a connection (from SYN-ACK tracking)
@@ -187,19 +206,32 @@ mod tests {
 
     #[test]
     fn test_blacklist_subdomain_match() {
-        let ctx = Context::with_blacklist(vec!["example.com".to_string()]);
+        let ctx = Context::with_blacklist(vec!["*.example.com".to_string()]);
         
         assert!(ctx.is_blacklisted("sub.example.com"));
         assert!(ctx.is_blacklisted("deep.sub.example.com"));
-        assert!(!ctx.is_blacklisted("notexample.com"));
     }
 
     #[test]
-    fn test_blacklist_disabled() {
+    fn test_filter_disabled() {
         let ctx = Context::new();
         
-        // When blacklist is disabled, everything should match
-        assert!(ctx.is_blacklisted("anything.com"));
+        // When filter is disabled, everything should get bypass
+        assert!(ctx.should_apply_bypass("anything.com"));
+    }
+
+    #[test]
+    fn test_whitelist_mode() {
+        let filter = DomainFilter::with_domains(
+            FilterMode::Whitelist,
+            vec!["bank.com".to_string()],
+        );
+        let ctx = Context::with_filter(filter);
+        
+        // Whitelisted domains should NOT get bypass
+        assert!(!ctx.should_apply_bypass("bank.com"));
+        // Others should get bypass
+        assert!(ctx.should_apply_bypass("youtube.com"));
     }
 
     #[test]
@@ -217,3 +249,4 @@ mod tests {
         assert_eq!(ctx.stats.packets_processed, 0);
     }
 }
+

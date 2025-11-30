@@ -27,11 +27,22 @@ worker_threads = 2              # Number of packet processing threads
 packet_buffer_size = 16384      # Buffer size for packet capture
 max_connections = 10000         # Maximum tracked connections
 
-# Blacklist Settings
-# You can specify domains that should be bypassed (processed by DPI bypass)
+# Domain Filter Settings
+# Filter domains to control which sites get DPI bypass
+#
+# Modes:
+#   - whitelist: Listed domains SKIP bypass (banks, gov sites)
+#   - blacklist: ONLY listed domains get bypass
+#   - disabled: All traffic gets bypass (default)
+#
 [blacklist]
-enabled = false
-# file_path = "blacklist.txt"   # Uncomment to use a blacklist file
+enabled = true
+mode = "whitelist"              # whitelist, blacklist, or disabled
+file_path = "configs/whitelist.txt"  # Local file for domain list
+auto_reload_interval = 30       # Check for file changes every 30 seconds
+
+# Inline domains (in addition to file)
+# domains = ["*.example.com", "bank.com"]
 
 # Fragmentation Strategy
 # Splits TCP segments to confuse DPI systems
