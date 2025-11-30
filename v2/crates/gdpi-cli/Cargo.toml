@@ -1,0 +1,48 @@
+[package]
+name = "gdpi-cli"
+version = "0.1.0"
+edition = "2021"
+description = "GoodbyeDPI-Turkey command-line interface"
+license = "Apache-2.0"
+authors = ["GoodbyeDPI-Turkey Team"]
+readme = "README.md"
+
+[[bin]]
+name = "goodbyedpi"
+path = "src/main.rs"
+
+[dependencies]
+gdpi-core = { path = "../gdpi-core" }
+gdpi-platform = { path = "../gdpi-platform" }
+
+# CLI
+clap = { version = "4.4", features = ["derive", "env", "wrap_help"] }
+clap_complete = "4.4"
+
+# Config
+toml = "0.8"
+serde = { version = "1.0", features = ["derive"] }
+directories = "5.0"
+
+# Logging
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
+tracing-appender = "0.2"
+
+# Error handling
+anyhow = "1.0"
+
+# Async
+tokio = { version = "1.35", features = ["full"] }
+
+# Misc
+ctrlc = { version = "3.4", features = ["termination"] }
+colored = "2.1"
+
+[target.'cfg(windows)'.dependencies]
+winapi = { version = "0.3", features = ["wincon", "processthreadsapi"] }
+
+[dev-dependencies]
+tempfile = "3.9"
+assert_cmd = "2.0"
+predicates = "3.1"

@@ -1,2 +1,4 @@
 *.o
 *.exe
+/v2/target/
+/v2/target/

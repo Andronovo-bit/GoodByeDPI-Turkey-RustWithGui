@@ -1,0 +1,40 @@
+[package]
+name = "gdpi-platform"
+version = "0.1.0"
+edition = "2021"
+description = "Platform-specific network operations for GoodbyeDPI"
+license = "Apache-2.0"
+authors = ["GoodbyeDPI-Turkey Team"]
+readme = "README.md"
+
+[features]
+default = ["windows"]
+windows = ["windivert-sys", "winapi"]
+
+[dependencies]
+gdpi-core = { path = "../gdpi-core" }
+thiserror = "1.0"
+tracing = "0.1"
+parking_lot = "0.12"
+bytes = "1.5"
+
+# Windows-specific
+[target.'cfg(windows)'.dependencies]
+winapi = { version = "0.3", features = [
+    "winsock2",
+    "ws2tcpip",
+    "winnt",
+    "minwindef",
+    "handleapi",
+    "errhandlingapi",
+    "processthreadsapi",
+], optional = true }
+windivert-sys = { version = "0.8", optional = true }
+
+# Linux-specific (future)
+[target.'cfg(target_os = "linux")'.dependencies]
+# nfqueue = { version = "0.1", optional = true }
+# netfilter_queue = { version = "0.2", optional = true }
+
+[dev-dependencies]
+tokio = { version = "1.35", features = ["rt-multi-thread", "macros"] }

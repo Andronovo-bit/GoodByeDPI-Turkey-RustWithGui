@@ -1,0 +1,43 @@
+[package]
+name = "gdpi-core"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+description = "Core DPI bypass logic and strategies - platform independent"
+
+[dependencies]
+# Error handling
+thiserror.workspace = true
+anyhow.workspace = true
+
+# Logging
+tracing.workspace = true
+
+# Serialization
+serde.workspace = true
+toml.workspace = true
+
+# Network packet handling
+pnet.workspace = true
+pnet_packet.workspace = true
+bytes.workspace = true
+
+# Utilities
+parking_lot.workspace = true
+dashmap.workspace = true
+once_cell.workspace = true
+bitflags.workspace = true
+hex.workspace = true
+rand.workspace = true
+
+[dev-dependencies]
+proptest.workspace = true
+mockall.workspace = true
+criterion.workspace = true
+
+# Benchmark will be added later
+# [[bench]]
+# name = "pipeline"
+# harness = false

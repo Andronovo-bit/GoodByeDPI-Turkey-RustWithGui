@@ -1,0 +1,19 @@
+[package]
+name = "gdpi-service"
+version = "0.1.0"
+edition = "2021"
+description = "Windows service wrapper for GoodbyeDPI"
+license = "Apache-2.0"
+authors = ["GoodbyeDPI-Turkey Team"]
+
+[dependencies]
+gdpi-core = { path = "../gdpi-core" }
+gdpi-platform = { path = "../gdpi-platform" }
+
+tracing = "0.1"
+tracing-subscriber = "0.3"
+anyhow = "1.0"
+
+[target.'cfg(windows)'.dependencies]
+windows-service = "0.6"
+winapi = { version = "0.3", features = ["winsvc", "winnt"] }
