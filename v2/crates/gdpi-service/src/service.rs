@@ -24,11 +24,12 @@ pub fn run_service() -> anyhow::Result<()> {
 
 /// Install the service
 pub fn install_service(
-    exe_path: &str,
-    args: &[&str],
-    auto_start: bool,
+    _exe_path: &str,
+    _args: &[&str],
+    _auto_start: bool,
 ) -> anyhow::Result<()> {
     info!("Installing service: {}", SERVICE_NAME);
+    // TODO: Implement service installation
     // sc create GoodbyeDPI binPath= "..."
     Ok(())
 }

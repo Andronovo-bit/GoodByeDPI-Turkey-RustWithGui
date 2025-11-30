@@ -274,9 +274,8 @@ fn extract_host_port(url: &str) -> Result<String> {
     
     if url.contains(':') {
         Ok(url.to_string())
-    } else if url.starts_with("https") {
-        Ok(format!("{}:443", url))
     } else {
+        // Default to port 443 for HTTPS
         Ok(format!("{}:443", url))
     }
 }
