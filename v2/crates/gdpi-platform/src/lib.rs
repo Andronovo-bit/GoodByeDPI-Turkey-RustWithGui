@@ -23,3 +23,7 @@ pub use windows::WinDivertDriver;
 // Platform-agnostic traits
 mod traits;
 pub use traits::{PacketCapture, PacketFilter};
+
+// Driver installer
+#[cfg(windows)]
+pub mod installer;

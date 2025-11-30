@@ -2,6 +2,7 @@
 
 pub mod completions;
 pub mod config;
+pub mod driver;
 pub mod run;
 pub mod service;
 pub mod test;
@@ -22,6 +23,12 @@ pub enum Command {
 
     /// Windows service management
     Service(service::ServiceArgs),
+    
+    /// WinDivert driver management
+    Driver {
+        #[command(subcommand)]
+        command: driver::DriverCommands,
+    },
 
     /// Generate shell completions
     Completions(completions::CompletionsArgs),

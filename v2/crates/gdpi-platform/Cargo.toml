@@ -30,6 +30,7 @@ winapi = { version = "0.3", features = [
     "processthreadsapi",
 ], optional = true }
 windivert-sys = { version = "0.8", optional = true }
+anyhow = "1.0"
 
 # Linux-specific (future)
 [target.'cfg(target_os = "linux")'.dependencies]

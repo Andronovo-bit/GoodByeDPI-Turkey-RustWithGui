@@ -223,6 +223,25 @@ fn run_packet_loop(
     {
         use gdpi_platform::windows::{FilterPresets, WinDivertDriver, Flags};
         use gdpi_platform::PacketCapture;
+        use gdpi_platform::installer::{WinDivertInstaller, interactive_install};
+
+        // Check if WinDivert is installed
+        let installer = WinDivertInstaller::new();
+        if !installer.is_installed() {
+            warn!("WinDivert driver not found");
+            
+            // Try interactive installation if running in terminal
+            if atty::is(atty::Stream::Stdin) {
+                if !interactive_install()? {
+                    anyhow::bail!("WinDivert driver is required. Run: goodbyedpi.exe driver install");
+                }
+            } else {
+                anyhow::bail!(
+                    "WinDivert driver not found. Please run:\n  \
+                     goodbyedpi.exe driver install"
+                );
+            }
+        }
 
         // Build filter
         let filter = if config.strategies.block_quic {

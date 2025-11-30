@@ -46,6 +46,9 @@ fn run(args: Args) -> Result<()> {
         Some(commands::Command::Service(service_args)) => {
             commands::service::execute(service_args)
         }
+        Some(commands::Command::Driver { command }) => {
+            commands::driver::run(command)
+        }
         Some(commands::Command::Completions(comp_args)) => {
             commands::completions::execute(comp_args)
         }
