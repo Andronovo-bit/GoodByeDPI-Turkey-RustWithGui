@@ -5,6 +5,7 @@ members = [
     "crates/gdpi-platform",
     "crates/gdpi-cli",
     "crates/gdpi-service",
+    "crates/gdpi-gui",
 ]
 
 [workspace.package]
