@@ -50,8 +50,8 @@ enabled = true
 ttl = 3                         # Low TTL so packets expire before reaching destination
 set_wrong_checksum = true       # Invalid checksum to confuse DPI
 set_wrong_seq = true            # Invalid sequence numbers
-auto_ttl = false                # Use fixed TTL instead of auto-detection
 min_hops = 3                    # Minimum hops before injecting fake packets
+# auto_ttl = { a1 = 1, a2 = 4, max = 10 }  # Uncomment for auto TTL detection
 
 # Header Mangle Strategy
 # Modifies HTTP headers to bypass pattern matching

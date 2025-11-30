@@ -27,8 +27,12 @@ enabled = true
 ttl = 1                         # Minimum TTL for fake packets
 set_wrong_checksum = true
 set_wrong_seq = true
-auto_ttl = true                 # Auto-detect optimal TTL
 min_hops = 1
+
+[strategies.fake_packet.auto_ttl]
+a1 = 1
+a2 = 4
+max = 10
 
 [strategies.header_mangle]
 enabled = true
