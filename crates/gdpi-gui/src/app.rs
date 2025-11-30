@@ -7,6 +7,7 @@ use eframe::egui;
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 use tracing::{info, error};
+use std::f32::consts::PI;
 
 /// Application state
 pub struct GoodbyeDpiApp {
@@ -26,6 +27,8 @@ pub struct GoodbyeDpiApp {
     should_quit: bool,
     /// Window visible
     window_visible: bool,
+    /// Animation start time for loading spinner
+    animation_start: Instant,
 }
 
 impl GoodbyeDpiApp {
@@ -43,6 +46,7 @@ impl GoodbyeDpiApp {
             tray: None,
             should_quit: false,
             window_visible: true,
+            animation_start: Instant::now(),
         }
     }
 
@@ -196,17 +200,34 @@ impl GoodbyeDpiApp {
 
                 // Status indicator
                 let status = self.get_status();
-                let (status_color, status_icon) = match status {
-                    ServiceStatus::Running => (egui::Color32::from_rgb(76, 175, 80), "●"),
-                    ServiceStatus::Starting => (egui::Color32::from_rgb(255, 193, 7), "◐"),
-                    ServiceStatus::Stopping => (egui::Color32::from_rgb(255, 152, 0), "◐"),
-                    ServiceStatus::Error => (egui::Color32::from_rgb(244, 67, 54), "●"),
-                    ServiceStatus::Stopped => (egui::Color32::from_rgb(158, 158, 158), "○"),
+                let is_loading = matches!(status, ServiceStatus::Starting | ServiceStatus::Stopping);
+                
+                // Animated spinner for loading states
+                let elapsed = self.animation_start.elapsed().as_secs_f32();
+                let spin_char = if is_loading {
+                    let chars = ["◐", "◓", "◑", "◒"];
+                    let idx = ((elapsed * 4.0) as usize) % chars.len();
+                    chars[idx]
+                } else {
+                    match status {
+                        ServiceStatus::Running => "●",
+                        ServiceStatus::Error => "●",
+                        ServiceStatus::Stopped => "○",
+                        _ => "◐",
+                    }
+                };
+                
+                let status_color = match status {
+                    ServiceStatus::Running => egui::Color32::from_rgb(76, 175, 80),
+                    ServiceStatus::Starting => egui::Color32::from_rgb(255, 193, 7),
+                    ServiceStatus::Stopping => egui::Color32::from_rgb(255, 152, 0),
+                    ServiceStatus::Error => egui::Color32::from_rgb(244, 67, 54),
+                    ServiceStatus::Stopped => egui::Color32::from_rgb(158, 158, 158),
                 };
 
                 ui.horizontal(|ui| {
                     ui.add_space(ui.available_width() / 2.0 - 80.0);
-                    ui.label(egui::RichText::new(status_icon).size(48.0).color(status_color));
+                    ui.label(egui::RichText::new(spin_char).size(48.0).color(status_color));
                     ui.vertical(|ui| {
                         ui.add_space(10.0);
                         ui.label(egui::RichText::new(status.as_str()).size(20.0).color(status_color));
@@ -215,38 +236,71 @@ impl GoodbyeDpiApp {
 
                 ui.add_space(30.0);
 
-                // Start/Stop button
-                let button_text = if status.is_running() { "⏹  Stop" } else { "▶  Start" };
-                let button_color = if status.is_running() {
-                    egui::Color32::from_rgb(244, 67, 54)
-                } else {
-                    egui::Color32::from_rgb(76, 175, 80)
+                // Start/Stop button with loading state
+                let (button_text, button_color, button_enabled) = match status {
+                    ServiceStatus::Starting => (
+                        "⏳  Starting...",
+                        egui::Color32::from_rgb(255, 193, 7),
+                        false
+                    ),
+                    ServiceStatus::Stopping => (
+                        "⏳  Stopping...",
+                        egui::Color32::from_rgb(255, 152, 0),
+                        false
+                    ),
+                    ServiceStatus::Running => (
+                        "⏹  Stop",
+                        egui::Color32::from_rgb(244, 67, 54),
+                        true
+                    ),
+                    _ => (
+                        "▶  Start",
+                        egui::Color32::from_rgb(76, 175, 80),
+                        true
+                    ),
                 };
 
                 let button = egui::Button::new(
                     egui::RichText::new(button_text).size(18.0).color(egui::Color32::WHITE)
                 )
-                .fill(button_color)
-                .min_size(egui::vec2(150.0, 45.0));
+                .fill(if button_enabled { button_color } else { button_color.gamma_multiply(0.7) })
+                .min_size(egui::vec2(160.0, 45.0));
 
-                if ui.add(button).clicked() {
+                let response = ui.add_enabled(button_enabled, button);
+                if response.clicked() {
                     self.toggle_service();
+                }
+                
+                // Show tooltip on disabled button
+                if !button_enabled {
+                    response.on_hover_text("Please wait...");
+                }
+
+                // Progress bar during loading
+                if is_loading {
+                    ui.add_space(10.0);
+                    let progress = (elapsed * 0.5).sin() * 0.5 + 0.5; // Pulsing effect
+                    let progress_bar = egui::ProgressBar::new(progress)
+                        .animate(true);
+                    ui.add_sized([200.0, 8.0], progress_bar);
                 }
 
                 ui.add_space(20.0);
 
-                // Profile selector
-                ui.horizontal(|ui| {
-                    ui.label("Profile:");
-                    egui::ComboBox::from_id_salt("profile_selector")
-                        .selected_text(&self.config.profile)
-                        .show_ui(ui, |ui| {
-                            for profile in &self.profiles {
-                                if ui.selectable_value(&mut self.config.profile, profile.clone(), profile).changed() {
-                                    let _ = self.config.save();
+                // Profile selector (disabled during loading)
+                ui.add_enabled_ui(!is_loading, |ui| {
+                    ui.horizontal(|ui| {
+                        ui.label("Profile:");
+                        egui::ComboBox::from_id_salt("profile_selector")
+                            .selected_text(&self.config.profile)
+                            .show_ui(ui, |ui| {
+                                for profile in &self.profiles {
+                                    if ui.selectable_value(&mut self.config.profile, profile.clone(), profile).changed() {
+                                        let _ = self.config.save();
+                                    }
                                 }
-                            }
-                        });
+                            });
+                    });
                 });
 
                 ui.add_space(20.0);
@@ -334,8 +388,15 @@ impl eframe::App for GoodbyeDpiApp {
             self.render_settings(ctx);
         }
 
-        // Request repaint for status updates
-        ctx.request_repaint_after(Duration::from_millis(100));
+        // Request repaint - faster during loading states
+        let status = self.get_status();
+        let is_loading = matches!(status, ServiceStatus::Starting | ServiceStatus::Stopping);
+        let repaint_delay = if is_loading {
+            Duration::from_millis(50)  // Fast animation during loading
+        } else {
+            Duration::from_millis(500) // Slower updates when idle
+        };
+        ctx.request_repaint_after(repaint_delay);
     }
 }
 
