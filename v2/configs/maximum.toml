@@ -1,0 +1,45 @@
+# GoodbyeDPI Maximum Compatibility Configuration
+#
+# Uses all available techniques for maximum DPI bypass.
+# This is equivalent to Mode 9 from the original GoodbyeDPI.
+#
+# Usage: goodbyedpi.exe run --config configs/maximum.toml
+
+[general]
+name = "maximum"
+version = "2.0.0"
+
+[dns]
+enabled = true
+ipv4_server = "77.88.8.8"
+ipv4_port = 1253
+
+[strategies.fragmentation]
+enabled = true
+http_size = 2
+https_size = 2                  # Very aggressive fragmentation
+http_persistent = true
+persistent_nowait = true
+native_split = false
+
+[strategies.fake_packet]
+enabled = true
+ttl = 1                         # Minimum TTL for fake packets
+set_wrong_checksum = true
+set_wrong_seq = true
+auto_ttl = true                 # Auto-detect optimal TTL
+min_hops = 1
+
+[strategies.header_mangle]
+enabled = true
+host_replace = true
+host_remove_space = true
+host_mix_case = true
+
+[strategies.passive_dpi]
+enabled = true
+reverse_fakepacket = true
+ip_ids = [1, 0]
+
+[strategies.quic_block]
+enabled = true

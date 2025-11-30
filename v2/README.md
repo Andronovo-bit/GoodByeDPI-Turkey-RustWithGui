@@ -1,191 +1,261 @@
-# GoodbyeDPI-Turkey v2
+# GoodbyeDPI Turkey v2 🇹🇷
 
-🚀 **Türkiye için DPI Bypass Aracının Rust ile Yeniden Yazılmış Versiyonu**
+[![CI](https://github.com/Andronovo-bit/GoodbyeDPI-Turkey/actions/workflows/ci.yml/badge.svg)](https://github.com/Andronovo-bit/GoodbyeDPI-Turkey/actions/workflows/ci.yml)
+[![License](https://img.shields.io/github/license/Andronovo-bit/GoodbyeDPI-Turkey)](LICENSE)
 
-## Özellikler
+Modern Rust implementation of GoodbyeDPI, specifically optimized for bypassing DPI (Deep Packet Inspection) restrictions in Turkey.
 
-- **Rust** ile yazıldı - Bellek güvenliği ve yüksek performans
-- **Modüler Mimari** - Hexagonal (Ports & Adapters) pattern
-- **Pluggable Stratejiler** - Kolayca yeni DPI bypass teknikleri eklenebilir
-- **TOML Yapılandırma** - Modern ve okunabilir config dosyaları
-- **Profile Desteği** - Legacy modlar (-1 ile -9) ve Turkey profili
-- **Cross-platform** - Windows-first, gelecekte Linux desteği
+## 🚀 Features
 
-## Proje Yapısı
+- **High Performance**: Written in Rust for maximum speed and memory safety
+- **Multi-Strategy Support**: 
+  - TCP fragmentation (HTTP/HTTPS)
+  - Fake packet injection (TTL-based)
+  - SNI manipulation
+  - Header mangling
+  - DNS redirection
+  - QUIC blocking
+- **Profile-Based Configuration**: Pre-configured modes for Turkish ISPs
+- **Windows Service Support**: Run as a background service
+- **Connection Tracking**: Smart TCP/DNS state management
+- **Blacklist Support**: Block specific domains
 
-```
-v2/
-├── Cargo.toml              # Workspace tanımı
-├── README.md               # Bu dosya
-└── crates/
-    ├── gdpi-core/          # Platform-bağımsız core mantık
-    │   └── src/
-    │       ├── config/     # TOML yapılandırma sistemi
-    │       ├── conntrack/  # TCP/DNS bağlantı takibi
-    │       ├── error.rs    # Hata tipleri
-    │       ├── packet/     # Paket parsing ve building
-    │       ├── pipeline/   # İşlem hattı (Chain of Responsibility)
-    │       └── strategies/ # DPI bypass stratejileri
-    │
-    ├── gdpi-platform/      # Platform-spesifik driver'lar
-    │   └── src/
-    │       ├── windows/    # WinDivert entegrasyonu
-    │       └── traits.rs   # Platform-agnostik trait'ler
-    │
-    ├── gdpi-cli/           # Komut satırı arayüzü
-    │   └── src/
-    │       ├── args.rs     # CLI argümanları
-    │       ├── commands/   # Alt komutlar
-    │       └── logging.rs  # Log yapılandırması
-    │
-    └── gdpi-service/       # Windows servisi
-```
+## 📦 Installation
 
-## Stratejiler
+### Pre-built Binaries
 
-| Strateji | Açıklama |
-|----------|----------|
-| `FragmentationStrategy` | HTTP/HTTPS paketlerini parçalara ayırır |
-| `FakePacketStrategy` | Sahte paketler enjekte eder (yanlış checksum/seq) |
-| `HeaderMangleStrategy` | HTTP header'larını modifiye eder |
-| `QuicBlockStrategy` | QUIC/HTTP3 (UDP 443) bloklar |
-| `DnsRedirectStrategy` | DNS sorgularını alternatif sunuculara yönlendirir |
+Download the latest release from [GitHub Releases](https://github.com/Andronovo-bit/GoodbyeDPI-Turkey/releases).
 
-## Kullanım
-
-### Temel Kullanım (Turkey Profili)
+### Build from Source
 
 ```bash
-goodbyedpi --turkey
-# veya
-goodbyedpi -t
+# Clone the repository
+git clone https://github.com/Andronovo-bit/GoodbyeDPI-Turkey.git
+cd GoodbyeDPI-Turkey/v2
+
+# Build release
+cargo build --release
+
+# The binary will be at target/release/goodbyedpi.exe
 ```
 
-### Legacy Modlar
+### Requirements
 
-```bash
-goodbyedpi -1  # Mode 1: En uyumlu
-goodbyedpi -5  # Mode 5: Auto-TTL
-goodbyedpi -9  # Mode 9: Tam mod + QUIC engelleme
+- Windows 10/11 (64-bit recommended)
+- Administrator privileges
+- [WinDivert](https://www.reqrypt.org/windivert.html) driver (included in releases)
+
+## 🎮 Usage
+
+### Quick Start
+
+```powershell
+# Run with Turkey-optimized profile (recommended)
+.\goodbyedpi.exe run --profile turkey
+
+# Run with specific mode
+.\goodbyedpi.exe run --mode 9
+
+# Run with custom config file
+.\goodbyedpi.exe run --config my-config.toml
 ```
 
-### Yapılandırma Dosyası ile
+### Available Profiles
 
-```bash
-goodbyedpi run --config config.toml
+| Profile | Description | Best For |
+|---------|-------------|----------|
+| `turkey` | Turkey-optimized settings | Most Turkish ISPs |
+| `mode1` | Most compatible | Older systems |
+| `mode3` | Better HTTP/HTTPS speed | Performance |
+| `mode4` | Minimal modifications | Light DPI |
+| `mode9` | Maximum compatibility | Heavy DPI |
+
+### Command-Line Options
+
+```
+USAGE:
+    goodbyedpi.exe <COMMAND>
+
+COMMANDS:
+    run           Run DPI bypass
+    service       Windows service management
+    config        Configuration management
+    test          Test connectivity
+    completions   Generate shell completions
+
+OPTIONS:
+    -v, --verbose    Increase verbosity (use multiple times for more detail)
+    -h, --help       Print help
+    -V, --version    Print version
 ```
 
-### Yapılandırma Oluşturma
+### Run Options
 
-```bash
-goodbyedpi config generate --profile turkey --output my-config.toml
+```
+goodbyedpi.exe run [OPTIONS]
+
+OPTIONS:
+    -p, --profile <PROFILE>    Use predefined profile [turkey, mode1-9]
+    -m, --mode <MODE>          Legacy mode number (1-9)
+    -c, --config <FILE>        Path to config file
+    -b, --blacklist <FILE>     Path to blacklist file
+    -d, --dns <IP:PORT>        Custom DNS server
+        --no-dns               Disable DNS redirection
+    -v, --verbose              Verbose output
 ```
 
-### Bağlantı Testi
+### Windows Service
 
-```bash
-goodbyedpi test all
-goodbyedpi test url twitter.com
-goodbyedpi test driver
+```powershell
+# Install as Windows service
+.\goodbyedpi.exe service install
+
+# Start service
+.\goodbyedpi.exe service start
+
+# Stop service
+.\goodbyedpi.exe service stop
+
+# Uninstall service
+.\goodbyedpi.exe service uninstall
 ```
 
-## Yapılandırma Örneği
+## ⚙️ Configuration
+
+Configuration is done via TOML files. Example:
 
 ```toml
-# config.toml
-
 [general]
-name = "Turkey"
-version = "2.0"
+name = "my-config"
+version = "2.0.0"
+auto_start = false
 
 [dns]
 enabled = true
-ipv4_upstream = "77.88.8.8"  # Yandex DNS
+ipv4_server = "77.88.8.8"  # Yandex DNS
+ipv4_port = 1253
 
 [strategies.fragmentation]
 enabled = true
 http_size = 2
-https_size = 2
-reverse_order = true
-native_split = true
+https_size = 40
+http_persistent = true
+native_split = false
 
 [strategies.fake_packet]
 enabled = true
+ttl = 3
 wrong_checksum = true
 wrong_seq = true
+
+[strategies.header_mangle]
+enabled = true
+host_replace = true
+host_mix_case = true
 
 [strategies.quic_block]
 enabled = true
 ```
 
-## Derleme
+## 🏗️ Architecture
 
-### Gereksinimler
+```
+v2/
+├── crates/
+│   ├── gdpi-core/       # Platform-independent core
+│   │   ├── config/      # Configuration management
+│   │   ├── conntrack/   # Connection tracking (TCP/DNS)
+│   │   ├── packet/      # Packet parsing & building
+│   │   ├── pipeline/    # Processing pipeline
+│   │   └── strategies/  # DPI bypass strategies
+│   ├── gdpi-platform/   # Platform-specific code (WinDivert)
+│   ├── gdpi-cli/        # Command-line interface
+│   └── gdpi-service/    # Windows service support
+```
 
-- Rust 1.75+
-- Windows 10/11 (packet capture için)
-- WinDivert driver
+### Core Strategies
 
-### Derleme Adımları
+| Strategy | Description |
+|----------|-------------|
+| `FragmentationStrategy` | Split HTTP/HTTPS packets into smaller fragments |
+| `FakePacketStrategy` | Inject fake packets with wrong checksums/TTL |
+| `HeaderMangleStrategy` | Modify HTTP headers (Host mixing, spacing) |
+| `DnsRedirectStrategy` | Redirect DNS queries to alternative servers |
+| `QuicBlockStrategy` | Block QUIC protocol (forces HTTPS fallback) |
+
+## 🧪 Testing
 
 ```bash
-# Clone
+# Run all tests
+cargo test --all
+
+# Run specific test suite
+cargo test --package gdpi-core -- config
+
+# Run with coverage
+cargo tarpaulin --all
+
+# Run benchmarks
+cargo bench
+```
+
+### Test Structure
+
+- Unit tests: Located in each module's `tests` submodule
+- Integration tests: `crates/gdpi-core/tests/`
+- Doc tests: Embedded in documentation comments
+
+## 📊 Performance
+
+The v2 rewrite focuses on performance optimizations:
+
+- **Zero-copy packet parsing**: Minimal memory allocations
+- **Lock-free connection tracking**: Using DashMap for concurrent access
+- **Batch processing**: Process multiple packets per syscall
+- **Compile-time optimizations**: Heavy use of const generics and inlining
+
+## 🤝 Contributing
+
+Contributions are welcome! Please read our Contributing Guide first.
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+### Development Setup
+
+```bash
+# Install Rust
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+
+# Clone and build
 git clone https://github.com/Andronovo-bit/GoodbyeDPI-Turkey.git
-cd GoodbyeDPI-Turkey
+cd GoodbyeDPI-Turkey/v2
+cargo build
 
-# v2 branch'ine geç
-git checkout v2-rust-rewrite
+# Run tests
+cargo test --all
 
-# Derle
-cd v2
-cargo build --release
-
-# Binary: target/release/goodbyedpi.exe
+# Run clippy
+cargo clippy --all
 ```
 
-## Mimari
+## 📝 License
 
-### Hexagonal Architecture
+This project is licensed under the Apache 2.0 License - see the [LICENSE](../LICENSE) file for details.
 
-```
-                    ┌─────────────────────────────────────┐
-                    │           CLI / Service             │
-                    └─────────────────────────────────────┘
-                                      │
-                    ┌─────────────────────────────────────┐
-                    │         Application Layer           │
-                    │    (Pipeline, Context, Config)      │
-                    └─────────────────────────────────────┘
-                                      │
-        ┌─────────────────────────────────────────────────────┐
-        │                    Domain Layer                      │
-        │  ┌────────────┐ ┌────────────┐ ┌────────────────┐  │
-        │  │ Strategies │ │  Packet    │ │  ConnTrack     │  │
-        │  └────────────┘ └────────────┘ └────────────────┘  │
-        └─────────────────────────────────────────────────────┘
-                                      │
-                    ┌─────────────────────────────────────┐
-                    │        Platform Adapters            │
-                    │   (WinDivert, NFQUEUE, etc.)        │
-                    └─────────────────────────────────────┘
-```
+## 🙏 Credits
 
-### Strategy Pattern
+- Original [GoodbyeDPI](https://github.com/ValdikSS/GoodbyeDPI) by ValdikSS
+- [WinDivert](https://www.reqrypt.org/windivert.html) by basil00
+- Turkish ISP testing and research community
 
-Her DPI bypass tekniği ayrı bir `Strategy` trait implementasyonudur:
+## ⚠️ Disclaimer
 
-```rust
-pub trait Strategy: Send + Sync {
-    fn name(&self) -> &'static str;
-    fn should_apply(&self, packet: &Packet, ctx: &Context) -> bool;
-    fn apply(&self, packet: Packet, ctx: &mut Context) -> Result<StrategyAction>;
-}
-```
+This tool is provided for educational and research purposes only. Users are responsible for ensuring their use complies with applicable laws and regulations in their jurisdiction.
 
-## Lisans
+---
 
-Apache License 2.0
-
-## Katkıda Bulunma
-
-Pull request'ler memnuniyetle karşılanır. Büyük değişiklikler için önce bir issue açınız.
+Made with ❤️ for internet freedom

@@ -1,0 +1,129 @@
+name: CI
+
+on:
+  push:
+    branches: [ v2-rust-rewrite, main ]
+    paths:
+      - 'v2/**'
+      - '.github/workflows/ci.yml'
+  pull_request:
+    branches: [ v2-rust-rewrite, main ]
+    paths:
+      - 'v2/**'
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+
+jobs:
+  test:
+    name: Test
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+        rust: [stable, nightly]
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Install Rust toolchain
+      uses: dtolnay/rust-action@stable
+      with:
+        toolchain: ${{ matrix.rust }}
+        components: clippy, rustfmt
+    
+    - name: Cache cargo registry
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cargo/registry
+          ~/.cargo/git
+          v2/target
+        key: ${{ runner.os }}-cargo-${{ hashFiles('v2/**/Cargo.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-cargo-
+    
+    - name: Build
+      working-directory: ./v2
+      run: cargo build --all --verbose
+    
+    - name: Run tests
+      working-directory: ./v2
+      run: cargo test --all --verbose
+    
+    - name: Run clippy
+      working-directory: ./v2
+      run: cargo clippy --all -- -D warnings
+      if: matrix.rust == 'stable'
+
+  fmt:
+    name: Format
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Install Rust toolchain
+      uses: dtolnay/rust-action@stable
+      with:
+        toolchain: stable
+        components: rustfmt
+    
+    - name: Check formatting
+      working-directory: ./v2
+      run: cargo fmt --all -- --check
+
+  docs:
+    name: Documentation
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Install Rust toolchain
+      uses: dtolnay/rust-action@stable
+      with:
+        toolchain: stable
+    
+    - name: Build documentation
+      working-directory: ./v2
+      run: cargo doc --all --no-deps
+      env:
+        RUSTDOCFLAGS: -D warnings
+
+  security:
+    name: Security Audit
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Install cargo-audit
+      run: cargo install cargo-audit
+    
+    - name: Run security audit
+      working-directory: ./v2
+      run: cargo audit
+      continue-on-error: true  # Don't fail CI on audit warnings
+
+  coverage:
+    name: Code Coverage
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Install Rust toolchain
+      uses: dtolnay/rust-action@stable
+      with:
+        toolchain: stable
+    
+    - name: Install cargo-tarpaulin
+      run: cargo install cargo-tarpaulin
+    
+    - name: Generate coverage report
+      working-directory: ./v2
+      run: cargo tarpaulin --out Xml --all
+    
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v4
+      with:
+        file: ./v2/cobertura.xml
+        fail_ci_if_error: false

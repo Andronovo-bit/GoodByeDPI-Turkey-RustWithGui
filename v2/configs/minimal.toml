@@ -1,0 +1,28 @@
+# GoodbyeDPI Minimal Configuration
+#
+# Basic configuration with minimal DPI bypass features.
+# Use this for light DPI or when other profiles cause issues.
+#
+# Usage: goodbyedpi.exe run --config configs/minimal.toml
+
+[general]
+name = "minimal"
+version = "2.0.0"
+
+[dns]
+enabled = false                 # Don't redirect DNS
+
+[strategies.fragmentation]
+enabled = true
+http_size = 0                   # Disable HTTP fragmentation
+https_size = 40                 # Only fragment HTTPS
+
+[strategies.fake_packet]
+enabled = false                 # Disable fake packets
+
+[strategies.header_mangle]
+enabled = true
+host_replace = true             # Just replace Host header case
+
+[strategies.quic_block]
+enabled = false                 # Don't block QUIC

@@ -1,0 +1,76 @@
+# GoodbyeDPI Turkey - Optimized Configuration
+# 
+# This profile is specifically tuned for Turkish ISPs (Türk Telekom, TurkNet, etc.)
+# It provides the best compatibility with DPI systems commonly used in Turkey.
+#
+# Usage: goodbyedpi.exe run --config configs/turkey.toml
+
+[general]
+name = "turkey"
+version = "2.0.0"
+auto_start = false
+run_as_service = false
+
+# DNS Redirection
+# Turkish ISPs often intercept DNS queries. Using external DNS servers
+# helps bypass DNS-level blocking.
+[dns]
+enabled = true
+ipv4_server = "77.88.8.8"       # Yandex DNS (low latency from Turkey)
+ipv4_port = 1253                # Non-standard port to avoid interception
+ipv6_server = "2a02:6b8::feed:0ff"
+ipv6_port = 1253
+
+# Performance Settings
+[performance]
+worker_threads = 2              # Number of packet processing threads
+packet_buffer_size = 16384      # Buffer size for packet capture
+max_connections = 10000         # Maximum tracked connections
+
+# Blacklist Settings
+# You can specify domains that should be bypassed (processed by DPI bypass)
+[blacklist]
+enabled = false
+# file_path = "blacklist.txt"   # Uncomment to use a blacklist file
+
+# Fragmentation Strategy
+# Splits TCP segments to confuse DPI systems
+[strategies.fragmentation]
+enabled = true
+http_size = 2                   # Fragment HTTP at 2 bytes (very small)
+https_size = 40                 # Fragment HTTPS at 40 bytes
+http_persistent = true          # Keep fragmenting on persistent connections
+persistent_nowait = true        # Don't wait for ACK on persistent connections
+native_split = false            # Use software fragmentation (more compatible)
+
+# Fake Packet Strategy  
+# Sends packets with invalid data to confuse DPI
+[strategies.fake_packet]
+enabled = true
+ttl = 3                         # Low TTL so packets expire before reaching destination
+set_wrong_checksum = true       # Invalid checksum to confuse DPI
+set_wrong_seq = true            # Invalid sequence numbers
+auto_ttl = false                # Use fixed TTL instead of auto-detection
+min_hops = 3                    # Minimum hops before injecting fake packets
+
+# Header Mangle Strategy
+# Modifies HTTP headers to bypass pattern matching
+[strategies.header_mangle]
+enabled = true
+host_replace = true             # Replace "Host:" with "host:"
+host_remove_space = true        # Remove space after "Host:"
+host_mix_case = true            # Mix case in hostname (ExAmPlE.CoM)
+do_fragment_http = false        # Don't fragment HTTP (handled by fragmentation strategy)
+
+# Passive DPI Detection
+# Detects and responds to passive DPI techniques
+[strategies.passive_dpi]
+enabled = true
+reverse_fakepacket = true       # Send fake packets in reverse direction
+ip_ids = [1, 0]                 # IP ID values for fake packets
+
+# QUIC Blocking
+# QUIC protocol can leak SNI. Blocking forces HTTPS fallback.
+[strategies.quic_block]
+enabled = true
+# drop_packets = false          # Just block initial packets, don't drop all
