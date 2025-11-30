@@ -1,0 +1,64 @@
+# GoodbyeDPI Turkey - Preset 5 + DNS Configuration
+# 
+# Orijinal GoodbyeDPI -5 preset'i + DNS yönlendirmesi.
+# Türk Telekom ve benzeri ISP'ler için önerilir.
+#
+# Eski karşılığı: turkey_dnsredir.cmd (-5 --set-ttl 5 --dns-addr --dns-port)
+# Kullanım: goodbyedpi.exe run --config configs/preset-5-dns.toml
+
+[general]
+name = "preset-5-dns"
+version = "2.0.0"
+auto_start = false
+run_as_service = false
+
+# DNS Redirection - Açık
+[dns]
+enabled = true
+ipv4_server = "77.88.8.8"       # Yandex DNS
+ipv4_port = 1253
+ipv6_server = "2a02:6b8::feed:0ff"
+ipv6_port = 1253
+
+# Performance Settings
+[performance]
+worker_threads = 2
+packet_buffer_size = 16384
+max_connections = 10000
+
+# Blacklist - Kapalı
+[blacklist]
+enabled = false
+
+# Fragmentation Strategy - Açık
+[strategies.fragmentation]
+enabled = true
+http_size = 2
+https_size = 2
+http_persistent = true
+persistent_nowait = true
+native_split = false
+
+# Fake Packet Strategy - Açık
+[strategies.fake_packet]
+enabled = true
+ttl = 5                         # turkey_dnsredir uses TTL 5
+set_wrong_checksum = true
+set_wrong_seq = true
+
+# Header Mangle Strategy - Açık
+[strategies.header_mangle]
+enabled = true
+host_replace = true
+host_remove_space = true
+host_mix_case = false
+do_fragment_http = false
+
+# Passive DPI - Açık
+[strategies.passive_dpi]
+enabled = true
+reverse_fakepacket = true
+
+# QUIC Blocking - Kapalı
+[strategies.quic_block]
+enabled = false

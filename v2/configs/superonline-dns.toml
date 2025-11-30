@@ -1,0 +1,54 @@
+# GoodbyeDPI Turkey - Superonline + DNS Configuration
+# 
+# Superonline ISP için TTL + DNS yönlendirmesi.
+# DNS engellemesi de varsa bu profili kullanın.
+#
+# Eski karşılığı: turkey_dnsredir_alternative3_superonline.cmd (--set-ttl 3 + DNS)
+# Kullanım: goodbyedpi.exe run --config configs/superonline-dns.toml
+
+[general]
+name = "superonline-dns"
+version = "2.0.0"
+auto_start = false
+run_as_service = false
+
+# DNS Redirection - Açık
+[dns]
+enabled = true
+ipv4_server = "77.88.8.8"       # Yandex DNS
+ipv4_port = 1253
+ipv6_server = "2a02:6b8::feed:0ff"
+ipv6_port = 1253
+
+# Performance Settings
+[performance]
+worker_threads = 2
+packet_buffer_size = 16384
+max_connections = 10000
+
+# Blacklist - Kapalı
+[blacklist]
+enabled = false
+
+# Fragmentation - Kapalı
+[strategies.fragmentation]
+enabled = false
+
+# Fake Packet Strategy - Sadece TTL
+[strategies.fake_packet]
+enabled = true
+ttl = 3                         # Superonline için düşük TTL
+set_wrong_checksum = false
+set_wrong_seq = false
+
+# Header Mangle - Kapalı
+[strategies.header_mangle]
+enabled = false
+
+# Passive DPI - Kapalı
+[strategies.passive_dpi]
+enabled = false
+
+# QUIC Blocking - Kapalı
+[strategies.quic_block]
+enabled = false

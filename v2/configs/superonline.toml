@@ -1,0 +1,50 @@
+# GoodbyeDPI Turkey - Superonline Configuration
+# 
+# Superonline ISP için optimize edilmiş ayarlar.
+# Sadece TTL manipülasyonu kullanır - en basit ve hızlı yöntem.
+#
+# Eski karşılığı: turkey_dnsredir_alternative_superonline.cmd (--set-ttl 3)
+# Kullanım: goodbyedpi.exe run --config configs/superonline.toml
+
+[general]
+name = "superonline"
+version = "2.0.0"
+auto_start = false
+run_as_service = false
+
+# DNS Redirection - Kapalı (Superonline genelde DNS engellemez)
+[dns]
+enabled = false
+
+# Performance Settings
+[performance]
+worker_threads = 2
+packet_buffer_size = 16384
+max_connections = 10000
+
+# Blacklist - Kapalı
+[blacklist]
+enabled = false
+
+# Fragmentation - Kapalı (sadece TTL yeterli)
+[strategies.fragmentation]
+enabled = false
+
+# Fake Packet Strategy - Sadece TTL
+[strategies.fake_packet]
+enabled = true
+ttl = 3                         # Superonline için düşük TTL
+set_wrong_checksum = false
+set_wrong_seq = false
+
+# Header Mangle - Kapalı
+[strategies.header_mangle]
+enabled = false
+
+# Passive DPI - Kapalı
+[strategies.passive_dpi]
+enabled = false
+
+# QUIC Blocking - Kapalı
+[strategies.quic_block]
+enabled = false

@@ -1,0 +1,66 @@
+# GoodbyeDPI Turkey - Preset 5 Configuration
+# 
+# Orijinal GoodbyeDPI -5 preset'inin Rust karşılığı.
+# Çoğu Türk ISP için iyi çalışır.
+#
+# Eski karşılığı: -5 parametresi
+# Kullanım: goodbyedpi.exe run --config configs/preset-5.toml
+
+# Preset -5 özellikleri:
+# - TCP fragmentation (2 byte)
+# - Fake packets with TTL
+# - Host header manipulation
+# - Reverse fake packets
+
+[general]
+name = "preset-5"
+version = "2.0.0"
+auto_start = false
+run_as_service = false
+
+# DNS Redirection - Kapalı (ayrı eklenebilir)
+[dns]
+enabled = false
+
+# Performance Settings
+[performance]
+worker_threads = 2
+packet_buffer_size = 16384
+max_connections = 10000
+
+# Blacklist - Kapalı
+[blacklist]
+enabled = false
+
+# Fragmentation Strategy - Açık
+[strategies.fragmentation]
+enabled = true
+http_size = 2                   # -5 preset uses 2 byte fragmentation
+https_size = 2
+http_persistent = true
+persistent_nowait = true
+native_split = false
+
+# Fake Packet Strategy - Açık
+[strategies.fake_packet]
+enabled = true
+ttl = 1                         # -5 preset uses TTL 1
+set_wrong_checksum = true
+set_wrong_seq = true
+
+# Header Mangle Strategy - Açık
+[strategies.header_mangle]
+enabled = true
+host_replace = true
+host_remove_space = true
+host_mix_case = false
+do_fragment_http = false
+
+# Passive DPI - Açık
+[strategies.passive_dpi]
+enabled = true
+reverse_fakepacket = true
+
+# QUIC Blocking - Kapalı
+[strategies.quic_block]
+enabled = false

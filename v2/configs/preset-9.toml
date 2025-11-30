@@ -1,0 +1,68 @@
+# GoodbyeDPI Turkey - Preset 9 Configuration
+# 
+# Orijinal GoodbyeDPI -9 preset'inin Rust karşılığı.
+# En agresif ayarlar - diğer profiller çalışmazsa deneyin.
+#
+# Eski karşılığı: turkey_dnsredir_alternative6_superonline.cmd (-9)
+# Kullanım: goodbyedpi.exe run --config configs/preset-9.toml
+
+# Preset -9 özellikleri:
+# - Tüm stratejiler aktif
+# - Daha agresif fragmentation
+# - Host header mix-case
+# - Wrong checksum ve sequence
+
+[general]
+name = "preset-9"
+version = "2.0.0"
+auto_start = false
+run_as_service = false
+
+# DNS Redirection - Kapalı
+[dns]
+enabled = false
+
+# Performance Settings
+[performance]
+worker_threads = 2
+packet_buffer_size = 16384
+max_connections = 10000
+
+# Blacklist - Kapalı
+[blacklist]
+enabled = false
+
+# Fragmentation Strategy - Agresif
+[strategies.fragmentation]
+enabled = true
+http_size = 2
+https_size = 1                  # -9 uses 1 byte HTTPS fragmentation
+http_persistent = true
+persistent_nowait = true
+native_split = false
+
+# Fake Packet Strategy - Agresif
+[strategies.fake_packet]
+enabled = true
+ttl = 1
+set_wrong_checksum = true
+set_wrong_seq = true
+min_hops = 1                    # Inject earlier
+
+# Header Mangle Strategy - Agresif
+[strategies.header_mangle]
+enabled = true
+host_replace = true
+host_remove_space = true
+host_mix_case = true            # -9 uses mixed case
+do_fragment_http = true         # Additional HTTP fragmentation
+
+# Passive DPI - Açık
+[strategies.passive_dpi]
+enabled = true
+reverse_fakepacket = true
+ip_ids = [1, 0]
+
+# QUIC Blocking - Açık
+[strategies.quic_block]
+enabled = true
