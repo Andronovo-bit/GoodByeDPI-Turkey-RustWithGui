@@ -49,6 +49,8 @@ pub struct Packet {
     pub ttl: u8,
     /// IP ID (IPv4 only)
     pub ip_id: Option<u16>,
+    /// Flag indicating this is a fake/decoy packet (should not be fragmented)
+    pub is_fake: bool,
 }
 
 impl Packet {
@@ -75,6 +77,7 @@ impl Packet {
             tcp_flags: None,
             ttl: 0,
             ip_id: None,
+            is_fake: false,
         };
 
         packet.parse()?;
@@ -481,6 +484,80 @@ impl Packet {
         }
     }
 
+    /// Get IP header length
+    pub fn ip_header_len(&self) -> usize {
+        self.ip_header_len
+    }
+
+    /// Get transport header length
+    pub fn transport_header_len(&self) -> usize {
+        self.transport_header_len
+    }
+
+    /// Get total header length (IP + transport)
+    pub fn total_header_len(&self) -> usize {
+        self.ip_header_len + self.transport_header_len
+    }
+
+    /// Create a new packet with different payload
+    /// Copies headers from this packet and uses the provided payload
+    pub fn with_new_payload(&self, new_payload: &[u8]) -> Result<Self> {
+        let header_len = self.ip_header_len + self.transport_header_len;
+        
+        // Create new data: headers + new payload
+        let mut new_data = BytesMut::with_capacity(header_len + new_payload.len());
+        new_data.extend_from_slice(&self.data[..header_len]);
+        new_data.extend_from_slice(new_payload);
+        
+        let mut packet = self.clone();
+        packet.data = new_data;
+        packet.update_lengths()?;
+        
+        Ok(packet)
+    }
+
+    /// Zero out IP and TCP checksums for recalculation
+    pub fn zero_checksums(&mut self) {
+        // Zero IP header checksum
+        if self.is_ipv4() && self.data.len() >= 12 {
+            self.data[10] = 0;
+            self.data[11] = 0;
+        }
+        
+        // Zero TCP checksum
+        if self.is_tcp() && self.data.len() >= self.ip_header_len + 18 {
+            let tcp_checksum_offset = self.ip_header_len + 16;
+            self.data[tcp_checksum_offset] = 0;
+            self.data[tcp_checksum_offset + 1] = 0;
+        }
+        
+        // Zero UDP checksum
+        if self.is_udp() && self.data.len() >= self.ip_header_len + 8 {
+            let udp_checksum_offset = self.ip_header_len + 6;
+            self.data[udp_checksum_offset] = 0;
+            self.data[udp_checksum_offset + 1] = 0;
+        }
+    }
+
+    /// Update IP total length field
+    pub fn update_ip_length(&mut self) {
+        let total_len = self.data.len();
+        
+        match self.ip_version {
+            IpVersion::V4 => {
+                let len_bytes = (total_len as u16).to_be_bytes();
+                self.data[2] = len_bytes[0];
+                self.data[3] = len_bytes[1];
+            }
+            IpVersion::V6 => {
+                let payload_len = (total_len - 40) as u16;
+                let len_bytes = payload_len.to_be_bytes();
+                self.data[4] = len_bytes[0];
+                self.data[5] = len_bytes[1];
+            }
+        }
+    }
+
     /// Split packet at payload offset, returns (first, second) fragments
     pub fn split_at_payload(&self, offset: usize) -> Result<(Self, Self)> {
         let header_len = self.ip_header_len + self.transport_header_len;
@@ -516,14 +593,20 @@ impl Packet {
     }
 
     /// Update IP and TCP length fields after modification
+    /// Also zeroes out checksums so WinDivert can recalculate them
     fn update_lengths(&mut self) -> Result<()> {
         let total_len = self.data.len();
 
         match self.ip_version {
             IpVersion::V4 => {
+                // Update IP total length
                 let len_bytes = (total_len as u16).to_be_bytes();
                 self.data[2] = len_bytes[0];
                 self.data[3] = len_bytes[1];
+                
+                // Zero out IP header checksum (offset 10-11) for recalculation
+                self.data[10] = 0;
+                self.data[11] = 0;
             }
             IpVersion::V6 => {
                 let payload_len = (total_len - 40) as u16;
@@ -531,6 +614,13 @@ impl Packet {
                 self.data[4] = len_bytes[0];
                 self.data[5] = len_bytes[1];
             }
+        }
+
+        // Zero out TCP checksum for recalculation
+        if self.is_tcp() && self.data.len() >= self.ip_header_len + 18 {
+            let tcp_checksum_offset = self.ip_header_len + 16;
+            self.data[tcp_checksum_offset] = 0;
+            self.data[tcp_checksum_offset + 1] = 0;
         }
 
         Ok(())

@@ -7,7 +7,7 @@ use crate::config::FragmentationConfig;
 use crate::error::Result;
 use crate::packet::{Packet, Direction};
 use crate::pipeline::Context;
-use tracing::{debug, instrument};
+use tracing::instrument;
 
 /// Fragmentation strategy for splitting packets
 pub struct FragmentationStrategy {
@@ -104,13 +104,25 @@ impl Strategy for FragmentationStrategy {
     }
 
     fn should_apply(&self, packet: &Packet, ctx: &Context) -> bool {
+        // Don't fragment fake/decoy packets
+        if packet.is_fake {
+            tracing::trace!("Fragment: skipping fake packet");
+            return false;
+        }
+        
         // Only apply to outbound TCP packets with data
-        if !packet.is_outbound() || !packet.is_tcp() {
+        if !packet.is_outbound() {
+            tracing::trace!("Fragment: not outbound");
+            return false;
+        }
+        if !packet.is_tcp() {
+            tracing::trace!("Fragment: not TCP");
             return false;
         }
 
         // Must have payload to fragment
         if packet.payload_len() == 0 {
+            tracing::trace!("Fragment: no payload");
             return false;
         }
 
@@ -119,11 +131,13 @@ impl Strategy for FragmentationStrategy {
         let is_https = packet.dst_port == 443;
 
         if !is_http && !is_https {
+            tracing::trace!(dst_port = packet.dst_port, "Fragment: not HTTP/HTTPS port");
             return false;
         }
 
         // For HTTP, check if it looks like an HTTP request
         if is_http && !packet.is_http_request() {
+            tracing::trace!("Fragment: port 80 but not HTTP request");
             return false;
         }
 
@@ -156,11 +170,6 @@ impl Strategy for FragmentationStrategy {
 
         // Don't fragment if fragment size is larger than payload
         if fragment_size as usize >= packet.payload_len() {
-            debug!(
-                payload_len = packet.payload_len(),
-                fragment_size,
-                "Payload too small to fragment"
-            );
             return Ok(StrategyAction::Pass(packet));
         }
 
@@ -168,13 +177,6 @@ impl Strategy for FragmentationStrategy {
         let (first, second) = packet.split_at_payload(fragment_size as usize)?;
 
         ctx.stats.packets_fragmented += 1;
-        debug!(
-            fragment_size,
-            first_len = first.payload_len(),
-            second_len = second.payload_len(),
-            reverse = self.reverse_order,
-            "Packet fragmented"
-        );
 
         // Return fragments in order (or reversed)
         let fragments = if self.reverse_order {

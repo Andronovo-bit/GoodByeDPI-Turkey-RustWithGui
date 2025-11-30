@@ -335,17 +335,16 @@ impl FilterPresets {
         "outbound and tcp and (tcp.DstPort == 80 or tcp.DstPort == 443)".into()
     }
 
-    /// Full filter for GoodbyeDPI (HTTP + HTTPS + DNS + SYN-ACK)
+    /// Full filter for GoodbyeDPI (HTTP + HTTPS + SYN-ACK) - DNS excluded for stability
     pub fn goodbyedpi_full() -> String {
         "(outbound and tcp and (tcp.DstPort == 80 or tcp.DstPort == 443)) or \
-         (outbound and udp and udp.DstPort == 53) or \
          (inbound and tcp and tcp.Syn and tcp.Ack)".into()
     }
 
-    /// Turkey-optimized filter (includes QUIC blocking)
+    /// Turkey-optimized filter (includes QUIC blocking, DNS excluded for stability)
     pub fn turkey_optimized() -> String {
         "(outbound and tcp and (tcp.DstPort == 80 or tcp.DstPort == 443)) or \
-         (outbound and udp and (udp.DstPort == 53 or udp.DstPort == 443)) or \
+         (outbound and udp and udp.DstPort == 443) or \
          (inbound and tcp and tcp.Syn and tcp.Ack)".into()
     }
 }

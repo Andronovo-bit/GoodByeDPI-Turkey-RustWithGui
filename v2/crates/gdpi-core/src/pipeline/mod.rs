@@ -9,7 +9,7 @@ pub use context::{Context, Stats};
 use crate::error::Result;
 use crate::packet::Packet;
 use crate::strategies::{Strategy, StrategyAction};
-use tracing::{debug, info, instrument};
+use tracing::instrument;
 
 /// Packet processing pipeline
 ///
@@ -76,8 +76,6 @@ impl Pipeline {
 
             for pkt in packets {
                 if strategy.should_apply(&pkt, ctx) {
-                    debug!(strategy = strategy.name(), "Applying strategy");
-                    
                     match strategy.apply(pkt, ctx)? {
                         StrategyAction::Pass(p) => {
                             new_packets.push(p);
@@ -87,7 +85,6 @@ impl Pipeline {
                         }
                         StrategyAction::Drop => {
                             // Don't add to new_packets, effectively dropping
-                            debug!(strategy = strategy.name(), "Packet dropped");
                         }
                         StrategyAction::InjectBefore(inject, original) => {
                             new_packets.extend(inject);
@@ -112,7 +109,6 @@ impl Pipeline {
         }
 
         ctx.stats.packets_processed += 1;
-        debug!(output_count = packets.len(), "Pipeline processing complete");
 
         Ok(packets)
     }

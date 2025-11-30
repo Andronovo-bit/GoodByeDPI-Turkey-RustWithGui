@@ -11,6 +11,31 @@ use tracing::{debug, error, info, warn};
 
 use crate::args::Args as GlobalArgs;
 
+/// Packet processing statistics
+#[derive(Default)]
+struct PacketStats {
+    total: u64,
+    modified: u64,
+    errors: u64,
+}
+
+/// Known blocked domains that we want to highlight in logs
+const BLOCKED_DOMAINS: &[&str] = &[
+    "discord.com",
+    "discordapp.com", 
+    "discord.gg",
+    "discord.media",
+    "discordcdn.com",
+    "gateway.discord.gg",
+    "media.discordapp.net",
+];
+
+/// Check if domain is in our known blocked list
+fn is_blocked_domain(host: &str) -> bool {
+    let host_lower = host.to_lowercase();
+    BLOCKED_DOMAINS.iter().any(|d| host_lower.contains(d))
+}
+
 /// Run command arguments
 #[derive(Args, Debug)]
 pub struct RunArgs {
@@ -349,33 +374,61 @@ fn run_packet_loop(
         let mut driver = WinDivertDriver::open(&filter, Flags::default())
             .context("Failed to open WinDivert - is the driver installed?")?;
 
-        info!("Packet capture started");
+        info!("Packet capture started - waiting for traffic...");
 
+        // Statistics counters
+        let mut stats = PacketStats::default();
+        let start_time = std::time::Instant::now();
+        
         while running.load(Ordering::SeqCst) {
             match driver.recv() {
                 Ok(captured) => {
+                    stats.total += 1;
+                    
                     match captured.parse() {
                         Ok(packet) => {
+                            // Extract SNI for logging blocked domains
+                            let sni = if packet.dst_port == 443 && packet.is_tls_client_hello() {
+                                packet.extract_sni()
+                            } else {
+                                None
+                            };
+                            
+                            // Process through pipeline
                             match pipeline.process(packet, &mut ctx) {
                                 Ok(output_packets) => {
+                                    let was_modified = output_packets.len() > 1;
+                                    
+                                    if was_modified {
+                                        stats.modified += 1;
+                                        
+                                        // Log only for known blocked domains
+                                        if let Some(ref host) = sni {
+                                            if is_blocked_domain(host) {
+                                                info!("🔓 Bypass: {} → {} packets", host, output_packets.len());
+                                            }
+                                        }
+                                    }
+                                    
+                                    // Send packets
                                     for pkt in output_packets {
-                                        let addr = captured.address.clone();
-                                        if let Err(e) = driver.send(pkt.as_bytes(), &addr) {
-                                            error!("Failed to send packet: {}", e);
+                                        if let Err(e) = driver.send(pkt.as_bytes(), &captured.address) {
+                                            error!("Send failed: {}", e);
                                         }
                                     }
                                 }
                                 Err(e) => {
-                                    warn!("Pipeline error: {}", e);
-                                    // Re-inject original packet
+                                    stats.errors += 1;
+                                    debug!("Pipeline error: {}", e);
                                     let _ = driver.send(&captured.data, &captured.address);
                                 }
                             }
                         }
-                        Err(e) => {
-                            debug!("Failed to parse packet: {}", e);
+                        Err(_e) => {
                             // Re-inject as-is
-                            let _ = driver.send(&captured.data, &captured.address);
+                            if let Err(e) = driver.send(&captured.data, &captured.address) {
+                                error!("Failed to re-inject raw packet: {}", e);
+                            }
                         }
                     }
                 }
@@ -384,6 +437,16 @@ fn run_packet_loop(
                 }
             }
         }
+
+        // Final stats
+        let elapsed = start_time.elapsed();
+        info!(
+            "Session ended: {} packets processed, {} modified, {} errors in {:.1}s",
+            stats.total,
+            stats.modified, 
+            stats.errors,
+            elapsed.as_secs_f64()
+        );
 
         driver.close()?;
     }

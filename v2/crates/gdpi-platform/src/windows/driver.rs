@@ -1,11 +1,13 @@
 //! WinDivert driver wrapper
 //!
-//! Safe Rust wrapper around WinDivert FFI.
+//! Safe Rust wrapper around WinDivert using the `windivert` crate.
 
 use crate::error::{PlatformError, Result};
 use crate::traits::{CapturedPacket, PacketAddress, PacketCapture, PacketFilter};
-use std::ptr;
 use tracing::{debug, info, warn};
+
+#[cfg(windows)]
+use windivert::prelude::*;
 
 /// WinDivert layer enum
 #[repr(i32)]
@@ -52,6 +54,18 @@ impl Flags {
         if self.fragments { flags |= 0x0020; }
         flags
     }
+
+    /// Convert to WinDivertFlags
+    #[cfg(windows)]
+    pub fn to_windivert_flags(&self) -> WinDivertFlags {
+        let mut flags = WinDivertFlags::new();
+        if self.sniff { flags = flags.set_sniff(); }
+        if self.drop { flags = flags.set_drop(); }
+        if self.recv_only { flags = flags.set_recv_only(); }
+        if self.send_only { flags = flags.set_send_only(); }
+        if self.fragments { flags = flags.set_fragments(); }
+        flags
+    }
 }
 
 /// WinDivert driver wrapper
@@ -76,15 +90,15 @@ impl Flags {
 /// }
 /// ```
 pub struct WinDivertDriver {
-    /// WinDivert handle (platform-specific)
+    /// WinDivert handle
     #[cfg(windows)]
-    handle: *mut std::ffi::c_void,
+    handle: Option<WinDivert<windivert::layer::NetworkLayer>>,
     #[cfg(not(windows))]
-    handle: usize,
+    _handle: Option<()>,
     /// Current filter
     filter: String,
-    /// Layer
-    layer: Layer,
+    /// Layer (stored for reference)
+    _layer: Layer,
     /// Buffer for receiving packets
     recv_buffer: Vec<u8>,
     /// Is handle valid
@@ -120,42 +134,23 @@ impl WinDivertDriver {
     /// Open WinDivert with full options
     #[cfg(windows)]
     pub fn open_ex(filter: &str, layer: Layer, priority: i16, flags: Flags) -> Result<Self> {
-        use std::ffi::CString;
-
         info!(filter = filter, layer = ?layer, "Opening WinDivert handle");
 
         // Validate filter first
         Self::validate_filter_internal(filter)?;
 
-        let c_filter = CString::new(filter)
-            .map_err(|_| PlatformError::InvalidFilter("Invalid characters in filter".into()))?;
+        // Open WinDivert handle using the high-level crate
+        let wd_flags = flags.to_windivert_flags();
+        
+        let handle = WinDivert::network(filter, priority, wd_flags)
+            .map_err(|e| PlatformError::DriverInitFailed(format!("WinDivertOpen failed: {:?}", e)))?;
 
-        // WinDivert FFI call would go here
-        // For now, we use a placeholder
-        let handle: *mut std::ffi::c_void = unsafe {
-            // windivert_sys::WinDivertOpen(
-            //     c_filter.as_ptr(),
-            //     layer as i32,
-            //     priority,
-            //     flags.to_value(),
-            // )
-            ptr::null_mut() // Placeholder
-        };
-
-        if handle.is_null() {
-            let error = unsafe { 
-                // winapi::um::errhandlingapi::GetLastError()
-                0u32 // Placeholder
-            };
-            return Err(PlatformError::DriverInitFailed(
-                format!("WinDivertOpen failed with error {}", error)
-            ));
-        }
+        info!("WinDivert handle opened successfully");
 
         Ok(Self {
-            handle,
+            handle: Some(handle),
             filter: filter.to_string(),
-            layer,
+            _layer: layer,
             recv_buffer: vec![0u8; Self::MAX_PACKET_SIZE],
             is_open: true,
         })
@@ -166,9 +161,9 @@ impl WinDivertDriver {
     pub fn open(filter: &str, _flags: Flags) -> Result<Self> {
         warn!("WinDivert is only available on Windows");
         Ok(Self {
-            handle: 0,
+            _handle: None,
             filter: filter.to_string(),
-            layer: Layer::Network,
+            _layer: Layer::Network,
             recv_buffer: vec![0u8; Self::MAX_PACKET_SIZE],
             is_open: false,
         })
@@ -179,37 +174,31 @@ impl WinDivertDriver {
     pub fn open_ex(filter: &str, layer: Layer, _priority: i16, _flags: Flags) -> Result<Self> {
         warn!("WinDivert is only available on Windows");
         Ok(Self {
-            handle: 0,
+            _handle: None,
             filter: filter.to_string(),
-            layer,
+            _layer: layer,
             recv_buffer: vec![0u8; Self::MAX_PACKET_SIZE],
             is_open: false,
         })
     }
 
     /// Set queue length
+    #[allow(unused_variables)]
     pub fn set_queue_len(&mut self, queue_len: u32) -> Result<()> {
-        #[cfg(windows)]
-        {
-            // WinDivertSetParam call would go here
-            debug!(queue_len, "Set queue length");
-        }
+        debug!(queue_len, "Set queue length");
         Ok(())
     }
 
     /// Set queue time
+    #[allow(unused_variables)]
     pub fn set_queue_time(&mut self, queue_time: u32) -> Result<()> {
-        #[cfg(windows)]
-        {
-            // WinDivertSetParam call would go here
-            debug!(queue_time, "Set queue time");
-        }
+        debug!(queue_time, "Set queue time");
         Ok(())
     }
 
     /// Internal filter validation
     fn validate_filter_internal(filter: &str) -> Result<()> {
-        // Basic validation - real implementation would use WinDivertHelperCompileFilter
+        // Basic validation
         if filter.is_empty() {
             return Err(PlatformError::InvalidFilter("Empty filter".into()));
         }
@@ -221,7 +210,6 @@ impl WinDivertDriver {
             "true", "false", "and", "or", "not",
         ];
 
-        // This is a simplified check - real validation is done by WinDivert
         let lower = filter.to_lowercase();
         let has_valid_keyword = keywords.iter().any(|k| lower.contains(k)) 
             || lower.contains("==") 
@@ -237,26 +225,57 @@ impl WinDivertDriver {
 }
 
 impl PacketCapture for WinDivertDriver {
+    #[cfg(windows)]
     fn recv(&mut self) -> Result<CapturedPacket> {
+        use gdpi_core::packet::Direction;
+        
         if !self.is_open {
             return Err(PlatformError::HandleError("Handle not open".into()));
         }
 
-        #[cfg(windows)]
-        {
-            // Real WinDivert receive would go here
-            // let mut addr = std::mem::zeroed();
-            // let mut recv_len = 0u32;
-            // let result = WinDivertRecv(self.handle, ...);
-        }
+        let handle = self.handle.as_ref()
+            .ok_or_else(|| PlatformError::HandleError("No handle".into()))?;
 
-        // Placeholder for non-Windows/testing
-        Err(PlatformError::CaptureError("Not implemented".into()))
+        // Receive packet using the new API
+        let packet = handle.recv(&mut self.recv_buffer)
+            .map_err(|e| PlatformError::CaptureError(format!("Recv failed: {:?}", e)))?;
+
+        // Extract address info from the packet
+        let wd_addr = &packet.address;
+        
+        let addr = PacketAddress {
+            interface_index: wd_addr.interface_index(),
+            subinterface_index: wd_addr.subinterface_index(),
+            outbound: wd_addr.outbound(),
+            loopback: wd_addr.loopback(),
+            impostor: wd_addr.impostor(),
+            ipv6: wd_addr.ipv6(),
+            ip_checksum: wd_addr.ip_checksum(),
+            tcp_checksum: wd_addr.tcp_checksum(),
+            udp_checksum: wd_addr.udp_checksum(),
+        };
+        
+        let direction = if wd_addr.outbound() { 
+            Direction::Outbound 
+        } else { 
+            Direction::Inbound 
+        };
+
+        Ok(CapturedPacket {
+            data: packet.data.to_vec(),
+            direction,
+            interface_index: wd_addr.interface_index(),
+            subinterface_index: wd_addr.subinterface_index(),
+            address: addr,
+        })
+    }
+
+    #[cfg(not(windows))]
+    fn recv(&mut self) -> Result<CapturedPacket> {
+        Err(PlatformError::CaptureError("Not implemented on this platform".into()))
     }
 
     fn recv_batch(&mut self, max_count: usize) -> Result<Vec<CapturedPacket>> {
-        // For now, just call recv multiple times
-        // Real implementation would use WinDivertRecvEx
         let mut packets = Vec::with_capacity(max_count);
         
         for _ in 0..max_count {
@@ -270,24 +289,58 @@ impl PacketCapture for WinDivertDriver {
         Ok(packets)
     }
 
+    #[cfg(windows)]
     fn send(&mut self, packet: &[u8], addr: &PacketAddress) -> Result<()> {
+        use windivert::layer::NetworkLayer;
+        use windivert_sys::ChecksumFlags;
+        
         if !self.is_open {
             return Err(PlatformError::HandleError("Handle not open".into()));
         }
 
-        #[cfg(windows)]
-        {
-            // Real WinDivert send would go here
-            // WinDivertSend(self.handle, packet.as_ptr(), packet.len(), ...);
+        let handle = self.handle.as_ref()
+            .ok_or_else(|| PlatformError::HandleError("No handle".into()))?;
+
+        // Create WinDivert address
+        // SAFETY: We're filling in all the fields before sending
+        let mut wd_addr = unsafe { WinDivertAddress::<NetworkLayer>::new() };
+        wd_addr.set_outbound(addr.outbound);
+        wd_addr.set_loopback(addr.loopback);
+        wd_addr.set_impostor(addr.impostor);
+        // Don't set checksum flags - we'll recalculate them
+        wd_addr.set_ip_checksum(false);
+        wd_addr.set_tcp_checksum(false);
+        wd_addr.set_udp_checksum(false);
+        wd_addr.set_interface_index(addr.interface_index);
+        wd_addr.set_subinterface_index(addr.subinterface_index);
+
+        // Create packet to send
+        let mut wd_packet = WinDivertPacket::<NetworkLayer> {
+            address: wd_addr,
+            data: packet.to_vec().into(),
+        };
+
+        // CRITICAL: Recalculate checksums for modified packets!
+        // This calls WinDivertHelperCalcChecksums which properly computes
+        // IP header checksum and TCP/UDP checksums
+        if let Err(e) = wd_packet.recalculate_checksums(ChecksumFlags::default()) {
+            warn!("Failed to recalculate checksums: {:?}", e);
+            // Continue anyway - might still work
         }
 
-        // Placeholder
-        debug!(len = packet.len(), "Would send packet");
+        handle.send(&wd_packet)
+            .map_err(|e| PlatformError::InjectionError(format!("Send failed: {:?}", e)))?;
+
+        Ok(())
+    }
+
+    #[cfg(not(windows))]
+    fn send(&mut self, packet: &[u8], _addr: &PacketAddress) -> Result<()> {
+        debug!(len = packet.len(), "Would send packet (not Windows)");
         Ok(())
     }
 
     fn send_batch(&mut self, packets: &[(Vec<u8>, PacketAddress)]) -> Result<()> {
-        // Real implementation would use WinDivertSendEx
         for (data, addr) in packets {
             self.send(data, addr)?;
         }
@@ -298,7 +351,7 @@ impl PacketCapture for WinDivertDriver {
         if self.is_open {
             #[cfg(windows)]
             {
-                // WinDivertClose(self.handle);
+                self.handle = None;
             }
             self.is_open = false;
             info!("Closed WinDivert handle");
@@ -308,9 +361,9 @@ impl PacketCapture for WinDivertDriver {
 }
 
 impl PacketFilter for WinDivertDriver {
+    #[allow(unused_variables)]
     fn set_filter(&mut self, filter: &str) -> Result<()> {
         // WinDivert doesn't support changing filter after open
-        // Would need to close and reopen
         Err(PlatformError::InvalidFilter(
             "Cannot change filter after open - close and reopen".into()
         ))

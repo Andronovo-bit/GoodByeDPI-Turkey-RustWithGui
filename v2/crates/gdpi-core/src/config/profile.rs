@@ -154,7 +154,7 @@ impl Profile {
                 config.strategies.quic_block.enabled = false;
             }
             Profile::Mode9 => {
-                // -f 2 -e 2 --wrong-seq --wrong-chksum --reverse-frag --max-payload -q (default)
+                // Turkey-optimized: TTL + wrong_seq + fragmentation
                 config.strategies.fragmentation.enabled = true;
                 config.strategies.fragmentation.http_size = 2;
                 config.strategies.fragmentation.https_size = 2;
@@ -163,7 +163,9 @@ impl Profile {
                 config.strategies.fragmentation.http_persistent = true;
                 config.strategies.fragmentation.persistent_nowait = true;
                 config.strategies.fake_packet.enabled = true;
-                config.strategies.fake_packet.wrong_checksum = true;
+                config.strategies.fake_packet.ttl = Some(6);
+                // Note: wrong_checksum disabled - causes issues with WinDivert checksum recalc
+                config.strategies.fake_packet.wrong_checksum = false;
                 config.strategies.fake_packet.wrong_seq = true;
                 config.performance.max_payload_size = 1200;
                 config.strategies.quic_block.enabled = true;
