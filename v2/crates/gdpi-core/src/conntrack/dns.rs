@@ -141,7 +141,7 @@ mod tests {
     fn test_missing_entry() {
         let tracker = DnsConnTracker::new();
 
-        let result = tracker.get_original(99999);
+        let result = tracker.get_original(59999);
         assert_eq!(result, None);
     }
 

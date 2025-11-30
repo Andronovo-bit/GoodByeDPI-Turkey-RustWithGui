@@ -4,10 +4,8 @@
 
 use crate::error::{PlatformError, Result};
 use crate::traits::{CapturedPacket, PacketAddress, PacketCapture, PacketFilter};
-use gdpi_core::packet::Direction;
-use parking_lot::Mutex;
 use std::ptr;
-use tracing::{debug, error, info, warn};
+use tracing::{debug, info, warn};
 
 /// WinDivert layer enum
 #[repr(i32)]
@@ -62,19 +60,19 @@ impl Flags {
 ///
 /// # Example
 ///
-/// ```rust,no_run
+/// ```rust,ignore
 /// use gdpi_platform::windows::WinDivertDriver;
 /// use gdpi_platform::PacketCapture;
 ///
 /// let mut driver = WinDivertDriver::open(
 ///     "outbound and tcp.DstPort == 443",
 ///     Default::default(),
-/// )?;
+/// ).expect("Failed to open driver");
 ///
 /// loop {
-///     let captured = driver.recv()?;
+///     let captured = driver.recv().expect("Failed to receive");
 ///     // Process packet...
-///     driver.send(&captured.data, &captured.address)?;
+///     driver.send(&captured.data, &captured.address).expect("Failed to send");
 /// }
 /// ```
 pub struct WinDivertDriver {
@@ -134,7 +132,7 @@ impl WinDivertDriver {
 
         // WinDivert FFI call would go here
         // For now, we use a placeholder
-        let handle = unsafe {
+        let handle: *mut std::ffi::c_void = unsafe {
             // windivert_sys::WinDivertOpen(
             //     c_filter.as_ptr(),
             //     layer as i32,

@@ -1,6 +1,6 @@
 //! Service command - Windows service management
 
-use anyhow::Result;
+use anyhow::{Context, Result};
 use clap::{Args, Subcommand};
 
 /// Service command arguments

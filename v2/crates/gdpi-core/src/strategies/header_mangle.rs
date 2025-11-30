@@ -198,7 +198,11 @@ mod tests {
         strategy.mix_case_hostname(&mut hostname);
         
         // Check that odd-indexed lowercase letters are uppercased
-        assert_eq!(&hostname, b"eXaMpLe.CoM");
+        // e(0) X(1) a(2) M(3) p(4) L(5) e(6) .(7) c(8) O(9) m(10)
+        // Only ASCII lowercase letters at odd indices are uppercased
+        // Index 7 is '.', not a letter, so stays as '.'
+        // Index 9 is 'o' -> 'O'
+        assert_eq!(&hostname, b"eXaMpLe.cOm");
     }
 
     #[test]

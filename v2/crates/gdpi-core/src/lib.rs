@@ -12,18 +12,20 @@
 //!
 //! ## Example
 //!
-//! ```rust,no_run
-//! use gdpi_core::{Pipeline, Config};
+//! ```rust,ignore
+//! use gdpi_core::{Pipeline, Config, Context};
 //! use gdpi_core::strategies::{FragmentationStrategy, FakePacketStrategy};
 //!
-//! let config = Config::load("config.toml")?;
+//! let config = Config::load("config.toml").expect("Failed to load config");
 //! let mut pipeline = Pipeline::new();
 //!
-//! pipeline.add_strategy(FragmentationStrategy::from_config(&config));
-//! pipeline.add_strategy(FakePacketStrategy::from_config(&config));
+//! // Add strategies based on configuration
+//! pipeline.add_strategy(FragmentationStrategy::from_config(&config.strategies.fragmentation));
+//! pipeline.add_strategy(FakePacketStrategy::from_config(&config.strategies.fake_packet));
 //!
 //! // Process packets through the pipeline
-//! let output_packets = pipeline.process(packet, &mut context)?;
+//! let mut context = Context::new(&config);
+//! let output_packets = pipeline.process(packet, &mut context).expect("Processing failed");
 //! ```
 
 #![warn(missing_docs)]

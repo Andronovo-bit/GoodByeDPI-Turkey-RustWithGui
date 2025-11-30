@@ -240,6 +240,7 @@ fn test_driver() -> Result<()> {
         println!("Testing driver handle...");
         
         use gdpi_platform::windows::{WinDivertDriver, Flags};
+        use gdpi_platform::PacketCapture;
         
         match WinDivertDriver::open("true", Flags::default()) {
             Ok(mut driver) => {

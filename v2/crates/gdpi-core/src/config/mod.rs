@@ -102,20 +102,28 @@ impl Config {
         }
 
         // Validate fragmentation sizes
+        // Note: http_size or https_size can be 0 to disable fragmentation for that protocol
         if self.strategies.fragmentation.enabled {
             let http_size = self.strategies.fragmentation.http_size;
             let https_size = self.strategies.fragmentation.https_size;
             
-            if http_size == 0 || http_size > 65535 {
+            // At least one must be non-zero if fragmentation is enabled
+            if http_size == 0 && https_size == 0 {
                 return Err(Error::config_value(
-                    "strategies.fragmentation.http_size",
-                    "Must be between 1 and 65535",
+                    "strategies.fragmentation",
+                    "At least one of http_size or https_size must be non-zero when fragmentation is enabled",
                 ));
             }
-            if https_size == 0 || https_size > 65535 {
+            if http_size > 65535 {
+                return Err(Error::config_value(
+                    "strategies.fragmentation.http_size",
+                    "Must be between 0 and 65535",
+                ));
+            }
+            if https_size > 65535 {
                 return Err(Error::config_value(
                     "strategies.fragmentation.https_size",
-                    "Must be between 1 and 65535",
+                    "Must be between 0 and 65535",
                 ));
             }
         }
@@ -507,6 +515,8 @@ impl Default for PerformanceConfig {
 mod tests {
     use super::*;
 
+    // =========== Default Config Tests ===========
+    
     #[test]
     fn test_default_config() {
         let config = Config::default();
@@ -516,11 +526,78 @@ mod tests {
     }
 
     #[test]
+    fn test_default_general_config() {
+        let config = GeneralConfig::default();
+        assert_eq!(config.name, "default");
+        assert_eq!(config.version, "2.0");
+        assert!(!config.auto_start);
+        assert!(!config.run_as_service);
+    }
+
+    #[test]
+    fn test_default_dns_config() {
+        let config = DnsConfig::default();
+        assert!(!config.enabled);
+        assert_eq!(config.ipv4_port, Some(53));
+        assert_eq!(config.ipv6_port, Some(53));
+        assert!(config.flush_cache_on_start);
+    }
+
+    #[test]
+    fn test_default_performance_config() {
+        let config = PerformanceConfig::default();
+        assert_eq!(config.max_payload_size, 1200);
+        assert_eq!(config.worker_threads, 0);
+        assert_eq!(config.conntrack_max_entries, 10000);
+        assert!(config.additional_ports.is_empty());
+    }
+
+    // =========== Validation Tests ===========
+    
+    #[test]
     fn test_config_validation() {
         let config = Config::default();
         assert!(config.validate().is_ok());
     }
 
+    #[test]
+    fn test_config_validation_invalid_dns_port() {
+        let mut config = Config::default();
+        config.dns.enabled = true;
+        config.dns.ipv4_port = Some(0);
+        assert!(config.validate().is_err());
+    }
+
+    #[test]
+    fn test_config_validation_invalid_fragmentation_size() {
+        let mut config = Config::default();
+        config.strategies.fragmentation.enabled = true;
+        // Both http_size and https_size are 0 - this should be invalid
+        config.strategies.fragmentation.http_size = 0;
+        config.strategies.fragmentation.https_size = 0;
+        assert!(config.validate().is_err());
+        
+        // Only http_size is 0 but https_size is valid - this should be OK
+        config.strategies.fragmentation.https_size = 40;
+        assert!(config.validate().is_ok());
+    }
+
+    #[test]
+    fn test_config_validation_invalid_ttl() {
+        let mut config = Config::default();
+        config.strategies.fake_packet.ttl = Some(0);
+        assert!(config.validate().is_err());
+    }
+
+    #[test]
+    fn test_config_validation_valid_ttl() {
+        let mut config = Config::default();
+        config.strategies.fake_packet.ttl = Some(64);
+        assert!(config.validate().is_ok());
+    }
+
+    // =========== TOML Serialization Tests ===========
+    
     #[test]
     fn test_toml_roundtrip() {
         let config = Config::default();
@@ -531,9 +608,103 @@ mod tests {
     }
 
     #[test]
+    fn test_toml_custom_config() {
+        let mut config = Config::default();
+        config.dns.enabled = true;
+        config.dns.ipv4_upstream = Some(Ipv4Addr::new(8, 8, 8, 8));
+        config.strategies.quic_block.enabled = true;
+        
+        let toml = config.to_toml().unwrap();
+        let parsed = Config::from_toml(&toml).unwrap();
+        
+        assert!(parsed.dns.enabled);
+        assert_eq!(parsed.dns.ipv4_upstream, Some(Ipv4Addr::new(8, 8, 8, 8)));
+        assert!(parsed.strategies.quic_block.enabled);
+    }
+
+    #[test]
+    fn test_toml_parse_minimal() {
+        let toml_content = r#"
+[general]
+name = "test"
+
+[dns]
+enabled = false
+
+[strategies.fragmentation]
+enabled = true
+http_size = 4
+"#;
+        let config = Config::from_toml(toml_content).unwrap();
+        assert_eq!(config.general.name, "test");
+        assert!(!config.dns.enabled);
+        assert!(config.strategies.fragmentation.enabled);
+        assert_eq!(config.strategies.fragmentation.http_size, 4);
+    }
+
+    #[test]
+    fn test_toml_parse_invalid() {
+        let invalid_toml = "this is not [valid toml";
+        assert!(Config::from_toml(invalid_toml).is_err());
+    }
+
+    // =========== Legacy Mode Tests ===========
+    
+    #[test]
     fn test_legacy_mode() {
         let config = Config::from_legacy_mode(9).unwrap();
         assert!(config.strategies.fragmentation.enabled);
+        assert!(config.strategies.quic_block.enabled);
+    }
+
+    #[test]
+    fn test_legacy_mode_all_modes() {
+        for mode in 1..=9 {
+            let result = Config::from_legacy_mode(mode);
+            assert!(result.is_ok(), "Mode {} should be valid", mode);
+        }
+    }
+
+    #[test]
+    fn test_legacy_mode_invalid() {
+        assert!(Config::from_legacy_mode(0).is_err());
+        assert!(Config::from_legacy_mode(10).is_err());
+        assert!(Config::from_legacy_mode(255).is_err());
+    }
+
+    #[test]
+    fn test_legacy_mode1_most_compatible() {
+        let config = Config::from_legacy_mode(1).unwrap();
+        assert!(config.strategies.passive_dpi.enabled);
+        assert!(config.strategies.header_mangle.enabled);
+        assert!(config.strategies.fragmentation.enabled);
+        assert!(!config.strategies.fake_packet.enabled);
+        assert!(!config.strategies.quic_block.enabled);
+    }
+
+    #[test]
+    fn test_legacy_mode4_minimal() {
+        let config = Config::from_legacy_mode(4).unwrap();
+        assert!(config.strategies.passive_dpi.enabled);
+        assert!(config.strategies.header_mangle.enabled);
+        assert!(!config.strategies.fragmentation.enabled);
+        assert!(!config.strategies.fake_packet.enabled);
+    }
+
+    // =========== Profile Tests ===========
+    
+    #[test]
+    fn test_from_profile() {
+        let config = Config::from_profile(Profile::Turkey);
+        assert!(config.dns.enabled);
+        assert_eq!(config.dns.ipv4_upstream, Some(Ipv4Addr::new(77, 88, 8, 8)));
+    }
+
+    #[test]
+    fn test_from_profile_mode9() {
+        let config = Config::from_profile(Profile::Mode9);
+        assert!(config.strategies.fragmentation.enabled);
+        assert!(config.strategies.fake_packet.enabled);
         assert!(config.strategies.quic_block.enabled);
     }
 }

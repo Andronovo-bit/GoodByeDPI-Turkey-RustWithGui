@@ -126,6 +126,8 @@ pub mod ports {
 mod tests {
     use super::*;
 
+    // =========== TcpFlags Tests ===========
+    
     #[test]
     fn test_tcp_flags_roundtrip() {
         let flags = TcpFlags {
@@ -141,9 +143,106 @@ mod tests {
     }
 
     #[test]
+    fn test_tcp_flags_all_set() {
+        let flags = TcpFlags {
+            fin: true,
+            syn: true,
+            rst: true,
+            psh: true,
+            ack: true,
+            urg: true,
+            ece: true,
+            cwr: true,
+        };
+        
+        assert_eq!(flags.to_byte(), 0xFF);
+        assert_eq!(TcpFlags::from_byte(0xFF), flags);
+    }
+
+    #[test]
+    fn test_tcp_flags_none_set() {
+        let flags = TcpFlags::default();
+        assert_eq!(flags.to_byte(), 0x00);
+    }
+
+    #[test]
+    fn test_tcp_flags_individual() {
+        // Test each flag individually
+        assert_eq!(TcpFlags::from_byte(0x01).fin, true);
+        assert_eq!(TcpFlags::from_byte(0x02).syn, true);
+        assert_eq!(TcpFlags::from_byte(0x04).rst, true);
+        assert_eq!(TcpFlags::from_byte(0x08).psh, true);
+        assert_eq!(TcpFlags::from_byte(0x10).ack, true);
+        assert_eq!(TcpFlags::from_byte(0x20).urg, true);
+        assert_eq!(TcpFlags::from_byte(0x40).ece, true);
+        assert_eq!(TcpFlags::from_byte(0x80).cwr, true);
+    }
+
+    #[test]
+    fn test_tcp_flags_syn_ack() {
+        // Common SYN-ACK combination
+        let flags = TcpFlags::from_byte(0x12); // SYN + ACK
+        assert!(flags.syn);
+        assert!(flags.ack);
+        assert!(!flags.fin);
+        assert!(!flags.rst);
+    }
+
+    // =========== Protocol Tests ===========
+    
+    #[test]
     fn test_protocol_from_u8() {
         assert_eq!(Protocol::from_u8(6), Protocol::Tcp);
         assert_eq!(Protocol::from_u8(17), Protocol::Udp);
+        assert_eq!(Protocol::from_u8(1), Protocol::Icmp);
+        assert_eq!(Protocol::from_u8(58), Protocol::Icmpv6);
         assert_eq!(Protocol::from_u8(99), Protocol::Unknown);
+        assert_eq!(Protocol::from_u8(0), Protocol::Unknown);
+        assert_eq!(Protocol::from_u8(255), Protocol::Unknown);
+    }
+
+    #[test]
+    fn test_protocol_to_u8() {
+        assert_eq!(Protocol::Tcp.to_u8(), 6);
+        assert_eq!(Protocol::Udp.to_u8(), 17);
+        assert_eq!(Protocol::Icmp.to_u8(), 1);
+        assert_eq!(Protocol::Icmpv6.to_u8(), 58);
+        assert_eq!(Protocol::Unknown.to_u8(), 0);
+    }
+
+    #[test]
+    fn test_protocol_roundtrip() {
+        for proto in [Protocol::Tcp, Protocol::Udp, Protocol::Icmp, Protocol::Icmpv6] {
+            let num = proto.to_u8();
+            assert_eq!(Protocol::from_u8(num), proto);
+        }
+    }
+
+    // =========== Direction Tests ===========
+    
+    #[test]
+    fn test_direction_equality() {
+        assert_eq!(Direction::Outbound, Direction::Outbound);
+        assert_eq!(Direction::Inbound, Direction::Inbound);
+        assert_ne!(Direction::Outbound, Direction::Inbound);
+    }
+
+    // =========== IpVersion Tests ===========
+    
+    #[test]
+    fn test_ip_version_equality() {
+        assert_eq!(IpVersion::V4, IpVersion::V4);
+        assert_eq!(IpVersion::V6, IpVersion::V6);
+        assert_ne!(IpVersion::V4, IpVersion::V6);
+    }
+
+    // =========== Ports Tests ===========
+    
+    #[test]
+    fn test_well_known_ports() {
+        assert_eq!(ports::HTTP, 80);
+        assert_eq!(ports::HTTPS, 443);
+        assert_eq!(ports::DNS, 53);
+        assert_eq!(ports::QUIC, 443);
     }
 }

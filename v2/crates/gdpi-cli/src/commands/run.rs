@@ -7,7 +7,7 @@ use gdpi_core::pipeline::{Context as PipelineContext, Pipeline};
 use gdpi_core::strategies::StrategyBuilder;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
-use tracing::{info, warn};
+use tracing::{debug, error, info, warn};
 
 use crate::args::Args as GlobalArgs;
 
@@ -216,7 +216,7 @@ fn load_blacklist(path: &str) -> Result<Vec<String>> {
 fn run_packet_loop(
     config: Config,
     pipeline: Pipeline,
-    ctx: PipelineContext,
+    mut ctx: PipelineContext,
     running: Arc<AtomicBool>,
 ) -> Result<()> {
     #[cfg(windows)]
@@ -247,7 +247,7 @@ fn run_packet_loop(
                                 Ok(output_packets) => {
                                     for pkt in output_packets {
                                         let addr = captured.address.clone();
-                                        if let Err(e) = driver.send(&pkt.data, &addr) {
+                                        if let Err(e) = driver.send(pkt.as_bytes(), &addr) {
                                             error!("Failed to send packet: {}", e);
                                         }
                                     }

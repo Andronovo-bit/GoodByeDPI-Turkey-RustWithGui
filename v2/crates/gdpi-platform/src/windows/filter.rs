@@ -2,7 +2,6 @@
 //!
 //! Type-safe builder for WinDivert filter expressions.
 
-use std::fmt;
 
 /// Filter builder for WinDivert
 ///
@@ -16,9 +15,11 @@ use std::fmt;
 /// let filter = FilterBuilder::new()
 ///     .outbound()
 ///     .tcp()
+///     .group_start()
 ///     .dst_port(443)
 ///     .or()
 ///     .dst_port(80)
+///     .group_end()
 ///     .build();
 ///
 /// assert_eq!(filter, "outbound and tcp and (tcp.DstPort == 443 or tcp.DstPort == 80)");

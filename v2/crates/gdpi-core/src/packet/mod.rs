@@ -328,30 +328,36 @@ impl Packet {
             return None;
         }
 
-        // Very basic SNI extraction - looks for the SNI extension pattern
+        // Look for SNI extension (type 0x00 0x00)
         let mut ptr = 0;
-        while ptr + 8 < payload.len() {
-            // Look for SNI extension pattern
-            if payload[ptr] == 0x00
-                && payload[ptr + 1] == 0x00
-                && payload[ptr + 2] == 0x00
-                && payload[ptr + 4] == 0x00
-                && payload[ptr + 6] == 0x00
-                && payload[ptr + 7] == 0x00
-            {
-                // Check length relationships
-                let ext_len = payload[ptr + 3] as usize;
-                let list_len = payload[ptr + 5] as usize;
-                let name_len = payload[ptr + 8] as usize;
-
-                if ext_len == list_len + 2 && list_len == name_len + 3 {
+        while ptr + 10 < payload.len() {
+            // Look for SNI extension pattern:
+            // [0x00, 0x00] = extension type (SNI)
+            // [ext_len_hi, ext_len_lo] = extension length
+            // [list_len_hi, list_len_lo] = server name list length
+            // [0x00] = name type (hostname)
+            // [name_len_hi, name_len_lo] = name length
+            if payload[ptr] == 0x00 && payload[ptr + 1] == 0x00 {
+                // This might be the SNI extension
+                if ptr + 9 >= payload.len() {
+                    ptr += 1;
+                    continue;
+                }
+                
+                let ext_len = ((payload[ptr + 2] as usize) << 8) | (payload[ptr + 3] as usize);
+                let list_len = ((payload[ptr + 4] as usize) << 8) | (payload[ptr + 5] as usize);
+                let name_type = payload[ptr + 6];
+                let name_len = ((payload[ptr + 7] as usize) << 8) | (payload[ptr + 8] as usize);
+                
+                // Validate lengths: ext_len = list_len + 2, list_len = name_len + 3, name_type = 0
+                if ext_len == list_len + 2 && list_len == name_len + 3 && name_type == 0x00 {
                     let sni_start = ptr + 9;
                     let sni_end = sni_start + name_len;
 
                     if sni_end <= payload.len() && name_len >= 3 && name_len <= MAX_HOSTNAME_LEN {
                         let sni_bytes = &payload[sni_start..sni_end];
                         
-                        // Validate hostname characters
+                        // Validate hostname characters (allow lowercase, digits, dot, hyphen)
                         if sni_bytes.iter().all(|&b| {
                             (b >= b'0' && b <= b'9')
                                 || (b >= b'a' && b <= b'z')

@@ -4,10 +4,8 @@
 
 #![cfg(windows)]
 
-use std::ffi::OsString;
-use std::sync::mpsc;
 use std::time::Duration;
-use tracing::{error, info};
+use tracing::info;
 
 /// Service name
 pub const SERVICE_NAME: &str = "GoodbyeDPI";
