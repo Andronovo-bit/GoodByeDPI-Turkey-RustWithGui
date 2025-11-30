@@ -225,21 +225,115 @@ fn run_packet_loop(
         use gdpi_platform::PacketCapture;
         use gdpi_platform::installer::{WinDivertInstaller, interactive_install};
 
-        // Check if WinDivert is installed
         let installer = WinDivertInstaller::new();
+        
+        // Check if WinDivert is installed
         if !installer.is_installed() {
             warn!("WinDivert driver not found");
             
-            // Try interactive installation if running in terminal
-            if atty::is(atty::Stream::Stdin) {
-                if !interactive_install()? {
-                    anyhow::bail!("WinDivert driver is required. Run: goodbyedpi.exe driver install");
+            println!("\n╔════════════════════════════════════════════════════════════╗");
+            println!("║           WinDivert Driver Installation Required           ║");
+            println!("╚════════════════════════════════════════════════════════════╝\n");
+            
+            println!("WinDivert is required for packet capture and modification.");
+            println!("It will be installed to: {:?}\n", installer.install_dir());
+            
+            // Check if we have admin privileges
+            if !WinDivertInstaller::is_admin() {
+                println!("🔐 Administrator privileges are required to install the driver.");
+                
+                if atty::is(atty::Stream::Stdin) {
+                    use std::io::{stdin, stdout, Write};
+                    
+                    print!("\nWould you like to install the driver now? [Y/n]: ");
+                    stdout().flush()?;
+                    
+                    let mut input = String::new();
+                    stdin().read_line(&mut input)?;
+                    
+                    let input = input.trim().to_lowercase();
+                    if input.is_empty() || input == "y" || input == "yes" {
+                        println!("\n📦 Requesting administrator privileges...");
+                        println!("   A UAC prompt will appear shortly.\n");
+                        
+                        // Request elevation to install driver
+                        match WinDivertInstaller::request_admin_and_run(&["driver", "install", "--yes"]) {
+                            Ok(false) => {
+                                // Check if installation succeeded
+                                if installer.is_installed() {
+                                    println!("✓ Driver installed successfully!\n");
+                                    println!("Restarting DPI bypass...\n");
+                                } else {
+                                    anyhow::bail!("Driver installation failed or was cancelled");
+                                }
+                            }
+                            Ok(true) => {
+                                // Already admin - shouldn't happen
+                            }
+                            Err(e) => {
+                                anyhow::bail!("Failed to install driver: {}", e);
+                            }
+                        }
+                    } else {
+                        println!("\nYou can install the driver later with:");
+                        println!("  goodbyedpi.exe driver install\n");
+                        anyhow::bail!("WinDivert driver is required to run");
+                    }
+                } else {
+                    anyhow::bail!(
+                        "WinDivert driver not found. Please run:\n  \
+                         goodbyedpi.exe driver install"
+                    );
                 }
             } else {
-                anyhow::bail!(
-                    "WinDivert driver not found. Please run:\n  \
-                     goodbyedpi.exe driver install"
-                );
+                // We have admin, install directly
+                if atty::is(atty::Stream::Stdin) {
+                    if !interactive_install()? {
+                        anyhow::bail!("WinDivert driver installation cancelled");
+                    }
+                } else {
+                    installer.install()?;
+                    info!("WinDivert driver installed");
+                }
+            }
+        }
+        
+        // Check admin for WinDivert operation
+        if !WinDivertInstaller::is_admin() {
+            println!("\n🔐 Administrator privileges are required to capture packets.");
+            
+            if atty::is(atty::Stream::Stdin) {
+                use std::io::{stdin, stdout, Write};
+                
+                print!("Would you like to restart with admin privileges? [Y/n]: ");
+                stdout().flush()?;
+                
+                let mut input = String::new();
+                stdin().read_line(&mut input)?;
+                
+                let input = input.trim().to_lowercase();
+                if input.is_empty() || input == "y" || input == "yes" {
+                    println!("\n📦 Requesting administrator privileges...\n");
+                    
+                    // Re-run with same arguments
+                    let args: Vec<String> = std::env::args().skip(1).collect();
+                    let args_refs: Vec<&str> = args.iter().map(|s| s.as_str()).collect();
+                    
+                    match WinDivertInstaller::request_admin_and_run(&args_refs) {
+                        Ok(false) => {
+                            // Elevated process ran
+                            std::process::exit(0);
+                        }
+                        Ok(true) => {}
+                        Err(e) => {
+                            anyhow::bail!("Failed to get admin privileges: {}", e);
+                        }
+                    }
+                } else {
+                    anyhow::bail!("Administrator privileges are required to run");
+                }
+            } else {
+                anyhow::bail!("Administrator privileges required. Please run as Administrator.");
             }
         }
 

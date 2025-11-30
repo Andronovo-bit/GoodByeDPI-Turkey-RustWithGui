@@ -46,17 +46,47 @@ fn install_driver(force: bool, yes: bool) -> Result<()> {
         return Ok(());
     }
 
+    // Request admin privileges if needed
     if !WinDivertInstaller::is_admin() {
-        println!("⚠  Administrator privileges required!");
-        println!("   Please run this command as Administrator.");
-        return Ok(());
+        println!("🔐 Administrator privileges required for installation.");
+        println!("   A UAC prompt will appear to request elevation.\n");
+        
+        // Build args for elevated process
+        let args = if force && yes {
+            vec!["driver", "install", "--force", "--yes"]
+        } else if force {
+            vec!["driver", "install", "--force", "--yes"] // Auto-yes when elevating
+        } else if yes {
+            vec!["driver", "install", "--yes"]
+        } else {
+            vec!["driver", "install", "--yes"] // Auto-yes when elevating
+        };
+        
+        match WinDivertInstaller::request_admin_and_run(&args) {
+            Ok(true) => {
+                // Already admin, shouldn't happen here
+            }
+            Ok(false) => {
+                // Elevation requested, new process ran
+                println!("✓ Installation completed in elevated process.");
+                return Ok(());
+            }
+            Err(e) => {
+                println!("✗ Failed to get administrator privileges: {}", e);
+                println!("\nYou can also run this command manually as Administrator.");
+                return Err(e);
+            }
+        }
     }
 
+    // We have admin privileges, proceed with installation
     if yes {
         // Non-interactive install
         if force && installer.is_installed() {
+            println!("Removing existing installation...");
             installer.uninstall()?;
         }
+        println!("Installing WinDivert driver...");
         installer.install()?;
         println!("✓ WinDivert installed successfully!");
     } else {
@@ -75,10 +105,28 @@ fn uninstall_driver(yes: bool) -> Result<()> {
         return Ok(());
     }
 
+    // Request admin privileges if needed
     if !WinDivertInstaller::is_admin() {
-        println!("⚠  Administrator privileges required!");
-        println!("   Please run this command as Administrator.");
-        return Ok(());
+        println!("🔐 Administrator privileges required for uninstallation.");
+        println!("   A UAC prompt will appear to request elevation.\n");
+        
+        let args = if yes {
+            vec!["driver", "uninstall", "--yes"]
+        } else {
+            vec!["driver", "uninstall", "--yes"] // Auto-yes when elevating
+        };
+        
+        match WinDivertInstaller::request_admin_and_run(&args) {
+            Ok(true) => {}
+            Ok(false) => {
+                println!("✓ Uninstallation completed in elevated process.");
+                return Ok(());
+            }
+            Err(e) => {
+                println!("✗ Failed to get administrator privileges: {}", e);
+                return Err(e);
+            }
+        }
     }
 
     if !yes {

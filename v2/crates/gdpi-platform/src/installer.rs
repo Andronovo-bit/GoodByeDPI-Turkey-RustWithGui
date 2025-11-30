@@ -203,6 +203,41 @@ impl WinDivertInstaller {
         }
     }
 
+    /// Request admin privileges and restart the application
+    /// Returns Ok(true) if already admin, Ok(false) if elevation was requested
+    #[cfg(windows)]
+    pub fn request_admin_and_run(args: &[&str]) -> Result<bool> {
+        if Self::is_admin() {
+            return Ok(true);
+        }
+
+        let exe_path = env::current_exe()
+            .context("Failed to get current executable path")?;
+
+        // Use ShellExecuteW with "runas" verb to trigger UAC
+        let args_str = args.join(" ");
+        
+        info!("Requesting administrator privileges...");
+
+        let status = Command::new("powershell")
+            .args([
+                "-Command",
+                &format!(
+                    "Start-Process -FilePath '{}' -ArgumentList '{}' -Verb RunAs -Wait",
+                    exe_path.display(),
+                    args_str
+                ),
+            ])
+            .status()
+            .context("Failed to request admin privileges")?;
+
+        if status.success() {
+            Ok(false) // Elevation was requested, new process started
+        } else {
+            bail!("User declined administrator privileges or elevation failed")
+        }
+    }
+
     /// Verify installation by trying to load the driver
     pub fn verify_installation(&self) -> Result<()> {
         if !self.is_installed() {
