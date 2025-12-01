@@ -3,126 +3,145 @@
 [![CI](https://github.com/Andronovo-bit/GoodbyeDPI-Turkey/actions/workflows/ci.yml/badge.svg)](https://github.com/Andronovo-bit/GoodbyeDPI-Turkey/actions/workflows/ci.yml)
 [![License](https://img.shields.io/github/license/Andronovo-bit/GoodbyeDPI-Turkey)](LICENSE)
 
-Modern Rust implementation of GoodbyeDPI, specifically optimized for bypassing DPI (Deep Packet Inspection) restrictions in Turkey.
+[🇬🇧 English](README_EN.md)
 
-## 🚀 Features
+Türkiye'deki DPI (Derin Paket İncelemesi) kısıtlamalarını aşmak için özel olarak optimize edilmiş, modern Rust implementasyonu.
 
-- **High Performance**: Written in Rust for maximum speed and memory safety
-- **Multi-Strategy Support**: 
-  - TCP fragmentation (HTTP/HTTPS)
-  - Fake packet injection (TTL-based)
-  - SNI manipulation
-  - Header mangling
-  - DNS redirection
-  - QUIC blocking
-- **Profile-Based Configuration**: Pre-configured modes for Turkish ISPs
-- **Windows Service Support**: Run as a background service
-- **Connection Tracking**: Smart TCP/DNS state management
-- **Blacklist Support**: Block specific domains
+## 🚀 Özellikler
 
-## 📦 Installation
+- **Yüksek Performans**: Maksimum hız ve bellek güvenliği için Rust ile yazılmıştır
+- **Çoklu Strateji Desteği**: 
+  - TCP fragmentasyonu (HTTP/HTTPS)
+  - Sahte paket enjeksiyonu (TTL tabanlı)
+  - SNI manipülasyonu
+  - Header değiştirme
+  - DNS yönlendirme
+  - QUIC engelleme
+- **Profil Tabanlı Yapılandırma**: Türk ISP'leri için önceden yapılandırılmış modlar
+- **Windows Servis Desteği**: Arka plan servisi olarak çalıştırma
+- **Bağlantı Takibi**: Akıllı TCP/DNS durum yönetimi
+- **Kara Liste Desteği**: Belirli domainleri engelleme
+- **Sistem Tepsisi GUI**: Kullanıcı dostu grafik arayüz
 
-### Pre-built Binaries
+## 📦 Kurulum
 
-Download the latest release from [GitHub Releases](https://github.com/Andronovo-bit/GoodbyeDPI-Turkey/releases).
+### Hazır Binary
 
-### Build from Source
+En son sürümü [GitHub Releases](https://github.com/Andronovo-bit/GoodbyeDPI-Turkey/releases) sayfasından indirin.
+
+### Kaynaktan Derleme
 
 ```bash
-# Clone the repository
+# Repoyu klonlayın
 git clone https://github.com/Andronovo-bit/GoodbyeDPI-Turkey.git
-cd GoodbyeDPI-Turkey/v2
+cd GoodbyeDPI-Turkey
 
-# Build release
-cargo build --release
+# CLI derlemesi
+cargo build --release -p gdpi-cli
 
-# The binary will be at target/release/goodbyedpi.exe
+# GUI derlemesi
+cargo build --release -p gdpi-gui
+
+# Binary'ler target/release/ dizininde olacak
 ```
 
-### Requirements
+### Gereksinimler
 
-- Windows 10/11 (64-bit recommended)
-- Administrator privileges
-- [WinDivert](https://www.reqrypt.org/windivert.html) driver (included in releases)
+- Windows 10/11 (64-bit önerilir)
+- Yönetici yetkileri
+- [WinDivert](https://www.reqrypt.org/windivert.html) sürücüsü (sürümlerde dahildir)
 
-## 🎮 Usage
+## 🎮 Kullanım
 
-### Quick Start
+### Hızlı Başlangıç (GUI)
 
 ```powershell
-# Run with Turkey-optimized profile (recommended)
+# GUI uygulamasını başlatın
+.\goodbyedpi-gui.exe
+```
+
+GUI özellikleri:
+- Sistem tepsisine minimize
+- Tek tıkla başlat/durdur
+- Profil seçimi
+- Servis durumu göstergesi
+
+### Komut Satırı (CLI)
+
+```powershell
+# Türkiye için optimize edilmiş profil ile çalıştır (önerilen)
 .\goodbyedpi.exe run --profile turkey
 
-# Run with specific mode
+# Belirli mod ile çalıştır
 .\goodbyedpi.exe run --mode 9
 
-# Run with custom config file
+# Özel config dosyası ile çalıştır
 .\goodbyedpi.exe run --config my-config.toml
 ```
 
-### Available Profiles
+### Kullanılabilir Profiller
 
-| Profile | Description | Best For |
-|---------|-------------|----------|
-| `turkey` | Turkey-optimized settings | Most Turkish ISPs |
-| `mode1` | Most compatible | Older systems |
-| `mode3` | Better HTTP/HTTPS speed | Performance |
-| `mode4` | Minimal modifications | Light DPI |
-| `mode9` | Maximum compatibility | Heavy DPI |
+| Profil | Açıklama | En İyi Kullanım |
+|--------|----------|-----------------|
+| `turkey` | Türkiye için optimize ayarlar | Çoğu Türk ISP'si |
+| `mode1` | En uyumlu | Eski sistemler |
+| `mode3` | Daha iyi HTTP/HTTPS hızı | Performans |
+| `mode4` | Minimum değişiklik | Hafif DPI |
+| `mode9` | Maksimum uyumluluk | Ağır DPI |
 
-### Command-Line Options
-
-```
-USAGE:
-    goodbyedpi.exe <COMMAND>
-
-COMMANDS:
-    run           Run DPI bypass
-    service       Windows service management
-    config        Configuration management
-    test          Test connectivity
-    completions   Generate shell completions
-
-OPTIONS:
-    -v, --verbose    Increase verbosity (use multiple times for more detail)
-    -h, --help       Print help
-    -V, --version    Print version
-```
-
-### Run Options
+### Komut Satırı Seçenekleri
 
 ```
-goodbyedpi.exe run [OPTIONS]
+KULLANIM:
+    goodbyedpi.exe <KOMUT>
 
-OPTIONS:
-    -p, --profile <PROFILE>    Use predefined profile [turkey, mode1-9]
-    -m, --mode <MODE>          Legacy mode number (1-9)
-    -c, --config <FILE>        Path to config file
-    -b, --blacklist <FILE>     Path to blacklist file
-    -d, --dns <IP:PORT>        Custom DNS server
-        --no-dns               Disable DNS redirection
-    -v, --verbose              Verbose output
+KOMUTLAR:
+    run           DPI bypass çalıştır
+    service       Windows servis yönetimi
+    config        Yapılandırma yönetimi
+    test          Bağlantı testi
+    completions   Shell tamamlama dosyaları oluştur
+
+SEÇENEKLER:
+    -v, --verbose    Ayrıntı seviyesini artır
+    -h, --help       Yardım göster
+    -V, --version    Versiyon göster
 ```
 
-### Windows Service
+### Çalıştırma Seçenekleri
+
+```
+goodbyedpi.exe run [SEÇENEKLER]
+
+SEÇENEKLER:
+    -p, --profile <PROFİL>     Önceden tanımlı profil kullan [turkey, mode1-9]
+    -m, --mode <MOD>           Eski mod numarası (1-9)
+    -c, --config <DOSYA>       Config dosyası yolu
+    -b, --blacklist <DOSYA>    Kara liste dosyası yolu
+    -d, --dns <IP:PORT>        Özel DNS sunucusu
+        --no-dns               DNS yönlendirmeyi devre dışı bırak
+    -v, --verbose              Ayrıntılı çıktı
+```
+
+### Windows Servisi
 
 ```powershell
-# Install as Windows service
+# Windows servisi olarak kur
 .\goodbyedpi.exe service install
 
-# Start service
+# Servisi başlat
 .\goodbyedpi.exe service start
 
-# Stop service
+# Servisi durdur
 .\goodbyedpi.exe service stop
 
-# Uninstall service
+# Servisi kaldır
 .\goodbyedpi.exe service uninstall
 ```
 
-## ⚙️ Configuration
+## ⚙️ Yapılandırma
 
-Configuration is done via TOML files. Example:
+Yapılandırma TOML dosyaları ile yapılır. Örnek:
 
 ```toml
 [general]
@@ -157,105 +176,106 @@ host_mix_case = true
 enabled = true
 ```
 
-## 🏗️ Architecture
+## 🏗️ Mimari
 
 ```
-v2/
-├── crates/
-│   ├── gdpi-core/       # Platform-independent core
-│   │   ├── config/      # Configuration management
-│   │   ├── conntrack/   # Connection tracking (TCP/DNS)
-│   │   ├── packet/      # Packet parsing & building
-│   │   ├── pipeline/    # Processing pipeline
-│   │   └── strategies/  # DPI bypass strategies
-│   ├── gdpi-platform/   # Platform-specific code (WinDivert)
-│   ├── gdpi-cli/        # Command-line interface
-│   └── gdpi-service/    # Windows service support
+crates/
+├── gdpi-core/       # Platform bağımsız çekirdek
+│   ├── config/      # Yapılandırma yönetimi
+│   ├── conntrack/   # Bağlantı takibi (TCP/DNS)
+│   ├── filter/      # Domain filtreleme (whitelist/blacklist)
+│   ├── packet/      # Paket ayrıştırma ve oluşturma
+│   ├── pipeline/    # İşleme hattı
+│   └── strategies/  # DPI bypass stratejileri
+├── gdpi-platform/   # Platform özel kod (WinDivert)
+├── gdpi-cli/        # Komut satırı arayüzü
+├── gdpi-gui/        # Sistem tepsisi GUI
+└── gdpi-service/    # Windows servis desteği
 ```
 
-### Core Strategies
+### Temel Stratejiler
 
-| Strategy | Description |
-|----------|-------------|
-| `FragmentationStrategy` | Split HTTP/HTTPS packets into smaller fragments |
-| `FakePacketStrategy` | Inject fake packets with wrong checksums/TTL |
-| `HeaderMangleStrategy` | Modify HTTP headers (Host mixing, spacing) |
-| `DnsRedirectStrategy` | Redirect DNS queries to alternative servers |
-| `QuicBlockStrategy` | Block QUIC protocol (forces HTTPS fallback) |
+| Strateji | Açıklama |
+|----------|----------|
+| `FragmentationStrategy` | HTTP/HTTPS paketlerini daha küçük parçalara böl |
+| `FakePacketStrategy` | Yanlış checksum/TTL ile sahte paket enjekte et |
+| `HeaderMangleStrategy` | HTTP header'larını değiştir (Host karıştırma, boşluk) |
+| `DnsRedirectStrategy` | DNS sorgularını alternatif sunuculara yönlendir |
+| `QuicBlockStrategy` | QUIC protokolünü engelle (HTTPS fallback'e zorla) |
 
-## 🧪 Testing
+## 🧪 Test
 
 ```bash
-# Run all tests
+# Tüm testleri çalıştır
 cargo test --all
 
-# Run specific test suite
+# Belirli test paketini çalıştır
 cargo test --package gdpi-core -- config
 
-# Run with coverage
+# Coverage ile çalıştır
 cargo tarpaulin --all
 
-# Run benchmarks
+# Benchmark çalıştır
 cargo bench
 ```
 
-### Test Structure
+### Test Yapısı
 
-- Unit tests: Located in each module's `tests` submodule
-- Integration tests: `crates/gdpi-core/tests/`
-- Doc tests: Embedded in documentation comments
+- Birim testler: Her modülün `tests` alt modülünde
+- Entegrasyon testleri: `crates/gdpi-core/tests/`
+- Dokümantasyon testleri: Dokümantasyon yorumlarına gömülü
 
-## 📊 Performance
+## 📊 Performans
 
-The v2 rewrite focuses on performance optimizations:
+v2 yeniden yazımı performans optimizasyonlarına odaklanır:
 
-- **Zero-copy packet parsing**: Minimal memory allocations
-- **Lock-free connection tracking**: Using DashMap for concurrent access
-- **Batch processing**: Process multiple packets per syscall
-- **Compile-time optimizations**: Heavy use of const generics and inlining
+- **Zero-copy paket ayrıştırma**: Minimum bellek tahsisi
+- **Lock-free bağlantı takibi**: Eşzamanlı erişim için DashMap kullanımı
+- **Toplu işleme**: Syscall başına birden fazla paket işleme
+- **Derleme zamanı optimizasyonları**: const generics ve inlining'in yoğun kullanımı
 
-## 🤝 Contributing
+## 🤝 Katkıda Bulunma
 
-Contributions are welcome! Please read our Contributing Guide first.
+Katkılar memnuniyetle karşılanır!
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+1. Repoyu fork edin
+2. Feature branch oluşturun (`git checkout -b feature/harika-ozellik`)
+3. Değişikliklerinizi commit edin (`git commit -m 'Harika özellik ekle'`)
+4. Branch'e push edin (`git push origin feature/harika-ozellik`)
+5. Pull Request açın
 
-### Development Setup
+### Geliştirme Ortamı
 
 ```bash
-# Install Rust
+# Rust'ı kurun
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 
-# Clone and build
+# Klonlayın ve derleyin
 git clone https://github.com/Andronovo-bit/GoodbyeDPI-Turkey.git
-cd GoodbyeDPI-Turkey/v2
+cd GoodbyeDPI-Turkey
 cargo build
 
-# Run tests
+# Testleri çalıştırın
 cargo test --all
 
-# Run clippy
+# Clippy çalıştırın
 cargo clippy --all
 ```
 
-## 📝 License
+## 📝 Lisans
 
-This project is licensed under the Apache 2.0 License - see the [LICENSE](../LICENSE) file for details.
+Bu proje Apache 2.0 Lisansı altında lisanslanmıştır - detaylar için [LICENSE](LICENSE) dosyasına bakın.
 
-## 🙏 Credits
+## 🙏 Teşekkürler
 
-- Original [GoodbyeDPI](https://github.com/ValdikSS/GoodbyeDPI) by ValdikSS
-- [WinDivert](https://www.reqrypt.org/windivert.html) by basil00
-- Turkish ISP testing and research community
+- Orijinal [GoodbyeDPI](https://github.com/ValdikSS/GoodbyeDPI) - ValdikSS
+- [WinDivert](https://www.reqrypt.org/windivert.html) - basil00
+- Türk ISP test ve araştırma topluluğu
 
-## ⚠️ Disclaimer
+## ⚠️ Sorumluluk Reddi
 
-This tool is provided for educational and research purposes only. Users are responsible for ensuring their use complies with applicable laws and regulations in their jurisdiction.
+Bu araç yalnızca eğitim ve araştırma amaçlıdır. Kullanıcılar, kullanımlarının kendi yargı alanlarındaki geçerli yasa ve düzenlemelere uygunluğunu sağlamaktan sorumludur.
 
 ---
 
-Made with ❤️ for internet freedom
+❤️ ile internet özgürlüğü için yapıldı
