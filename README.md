@@ -1,4 +1,4 @@
-# GoodbyeDPI Turkey v2 🇹🇷
+# GoodbyeDPI Turkey v2(RUST) 🇹🇷
 
 [![CI](https://github.com/Andronovo-bit/GoodbyeDPI-Turkey/actions/workflows/ci.yml/badge.svg)](https://github.com/Andronovo-bit/GoodbyeDPI-Turkey/actions/workflows/ci.yml)
 [![License](https://img.shields.io/github/license/Andronovo-bit/GoodbyeDPI-Turkey)](LICENSE)
