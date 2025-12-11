@@ -68,33 +68,20 @@ impl GuiConfig {
         Ok(())
     }
 
-    /// Get available profiles
+    /// Get available profiles (built-in profiles)
     pub fn available_profiles() -> Vec<String> {
-        let exe_dir = std::env::current_exe()
-            .ok()
-            .and_then(|p| p.parent().map(|p| p.to_path_buf()))
-            .unwrap_or_else(|| PathBuf::from("."));
-        
-        let configs_dir = exe_dir.join("configs");
-        
-        if !configs_dir.exists() {
-            return vec!["turkey".to_string()];
-        }
-
-        std::fs::read_dir(configs_dir)
-            .ok()
-            .map(|entries| {
-                entries
-                    .filter_map(|e| e.ok())
-                    .filter(|e| e.path().extension().map_or(false, |ext| ext == "toml"))
-                    .filter_map(|e| {
-                        e.path()
-                            .file_stem()
-                            .and_then(|s| s.to_str())
-                            .map(|s| s.to_string())
-                    })
-                    .collect()
-            })
-            .unwrap_or_else(|| vec!["turkey".to_string()])
+        // Return all built-in profiles
+        vec![
+            "turkey".to_string(),
+            "mode1".to_string(),
+            "mode2".to_string(),
+            "mode3".to_string(),
+            "mode4".to_string(),
+            "mode5".to_string(),
+            "mode6".to_string(),
+            "mode7".to_string(),
+            "mode8".to_string(),
+            "mode9".to_string(),
+        ]
     }
 }
